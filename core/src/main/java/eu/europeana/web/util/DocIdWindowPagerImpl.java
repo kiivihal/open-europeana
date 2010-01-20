@@ -90,7 +90,12 @@ public class DocIdWindowPagerImpl implements DocIdWindowPager {
         if (pageId.equalsIgnoreCase("bd")) {
             out.append("brief-doc.html?");
             out.append("query=").append(encode(query));
-            // todo: add fq parameters
+            final String[] filterQueries = httpParameters.get("qf");
+            if (filterQueries != null) {
+                for (String filterQuery : filterQueries) {
+                    out.append("&qf=").append(filterQuery);
+                }
+            }
         }
         else if (pageId.equalsIgnoreCase("yg")) {
             out.append("year-grid.html?");
@@ -115,7 +120,7 @@ public class DocIdWindowPagerImpl implements DocIdWindowPager {
     private void setQueryStringForPaging(SolrQuery solrQuery) {
         StringBuilder out = new StringBuilder();
         out.append("query=").append(encode(solrQuery.getQuery()));
-        final String[] facetQueries = solrQuery.getFacetQuery();
+        final String[] facetQueries = solrQuery.getFilterQueries();
         if (facetQueries != null) {
             for (String facetTerm : facetQueries) {
                 out.append("&qf=").append(facetTerm);
@@ -212,6 +217,7 @@ public class DocIdWindowPagerImpl implements DocIdWindowPager {
         return tab;
     }
 
+    // todo fix this it throws an nullPointerException now
     @Override
     public String toString() {
         Map<String, String> map = new LinkedHashMap<String, String>();

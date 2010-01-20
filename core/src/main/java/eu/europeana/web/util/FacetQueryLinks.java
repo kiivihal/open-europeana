@@ -17,6 +17,7 @@ import java.util.List;
 public class FacetQueryLinks {
     private static final String FACET_PROMPT = "&qf=";
     private String type;
+    private boolean facetSelected = false;
     private List<FacetCountLink> links = new ArrayList<FacetCountLink>();
 
     public static List<FacetQueryLinks> createDecoratedFacets(SolrQuery solrQuery, List<FacetField> facetFields) throws UnsupportedEncodingException {
@@ -31,16 +32,23 @@ public class FacetQueryLinks {
         this.type = facetField.getName();
         if (facetField.getValueCount() > 0) {
             for (FacetField.Count count : facetField.getValues()) {
+                if (temporarilyPreventYear0000(this.type, count.getName())) {
+                    continue;
+                }
                 boolean remove = false;
                 StringBuilder url = new StringBuilder();
-                if (solrQuery.getFacetQuery() != null) {
-                    for (String facetTerm : solrQuery.getFacetQuery()) {
+                if (solrQuery.getFilterQueries() != null) {
+                    for (String facetTerm : solrQuery.getFilterQueries()) {
                         int colon = facetTerm.indexOf(":");
                         String facetName = facetTerm.substring(0, colon);
                         String facetValue = facetTerm.substring(colon + 1);
+                        if (temporarilyPreventYear0000(facetName, facetValue)) {
+                            continue;
+                        }
                         if (facetName.equalsIgnoreCase(facetField.getName())) {
                             if (count.getName().equalsIgnoreCase(facetValue)) {
                                 remove = true;
+                                facetSelected = true;
                             }
                             else {
                                 url.append(FACET_PROMPT).append(facetTerm);
@@ -66,12 +74,29 @@ public class FacetQueryLinks {
         }
     }
 
+    /**
+     * At one point the normalizer was letting unparseable values of year, coded ast 0000,
+     * through to the index.  This bandage solution prevents them from being presented.
+     *
+     * @param facetName year
+     * @param facetValue 0000
+     * @return true if it matches
+     */
+
+    private boolean temporarilyPreventYear0000(String facetName, String facetValue) {
+        return "YEAR".equals(facetName) && "0000".equals(facetValue);
+    }
+
     public String getType() {
         return type;
     }
 
     public List<FacetCountLink> getLinks() {
         return links;
+    }
+
+    public boolean isSelected() {
+        return facetSelected;
     }
 
     public class FacetCountLink {
