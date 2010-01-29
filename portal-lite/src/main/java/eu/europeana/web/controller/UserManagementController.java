@@ -22,7 +22,9 @@
 package eu.europeana.web.controller;
 
 import eu.europeana.database.UserDao;
+import eu.europeana.database.domain.StaticPageType;
 import eu.europeana.database.domain.User;
+import eu.europeana.query.ClickStreamLogger;
 import eu.europeana.web.util.ControllerUtil;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
@@ -47,18 +49,27 @@ public class UserManagementController {
         this.userDao = userDao;
     }
 
+    @Autowired
+    private ClickStreamLogger clickStreamLogger;
+
+    public void setClickStreamLogger(ClickStreamLogger clickStreamLogger) {
+        this.clickStreamLogger = clickStreamLogger;
+    }
+
     @RequestMapping("/myeuropeana.html")
-    public ModelAndView myEuropeanaHandler() throws Exception {
+    public ModelAndView myEuropeanaHandler(HttpServletRequest request) throws Exception {
         ModelAndView page = ControllerUtil.createModelAndViewPage("myeuropeana");
         User user = ControllerUtil.getUser();
         if (user != null) {
             ControllerUtil.setUser(userDao.updateUser(user));
         }
+        clickStreamLogger.log(request, ClickStreamLogger.UserAction.MY_EUROPEANA);
         return page;
     }
 
     @RequestMapping("/logout.html")
-    public ModelAndView logoutHandler() throws Exception {
+    public ModelAndView logoutHandler(HttpServletRequest request) throws Exception {
+        clickStreamLogger.log(request, ClickStreamLogger.UserAction.LOGOUT);
         return ControllerUtil.createModelAndViewPage("logout");
     }
 

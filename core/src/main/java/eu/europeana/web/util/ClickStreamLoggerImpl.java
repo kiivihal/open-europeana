@@ -65,13 +65,13 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
                         action, model.getViewName(), printLogAffix(request)));
     }
 
-//    public void log(HttpServletRequest request, ResultModel resultModel, QueryModel queryModel, ResultPagination resultPagination, ModelAndView model, UserAction action) {
-//        // get elements from queryModel
-//        nrResults = resultPagination.getNumFound();
-//        query = queryModel.getQueryString();
-//        queryType = queryModel.getQueryType();
-//        queryConstraints = formatQueryConstraints(queryModel.getConstraints());
-//    }
+    /**
+     * This method is used the basic information from the <code>HttpServletRequest<code>
+     * (@See <code>printLogAffix</code> )
+     *
+     * @param request the HttpServletRequest from the controller
+     * @param action the UserAction performed in the controller
+     */
 
     public void log(HttpServletRequest request, UserAction action) {
         log.info(
@@ -108,7 +108,8 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
 
     // todo: format full request url
     private String getRequestUrl(HttpServletRequest request) {
-        return null;  //To change body of created methods use File | Settings | File Templates.
+
+        return null;
     }
 
 }

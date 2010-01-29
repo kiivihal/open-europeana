@@ -106,6 +106,9 @@ public interface ClickStreamLogger {
 
         // user management related actions
         REGISTER,
+        REGISTER_SUCCESS,
+        REGISTER_FAILURE,
+        MY_EUROPEANA,
         UNREGISTER,
         LOGIN,
         LOGOUT,
@@ -116,6 +119,8 @@ public interface ClickStreamLogger {
 
         // static pages
         STATICPAGE,
+        CONTACT_PAGE,
+        FEEDBACK_SEND,
         INDEXPAGE;
 
         private String description;
