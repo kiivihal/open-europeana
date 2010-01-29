@@ -1,7 +1,7 @@
 /*
  * Copyright 2007 EDL FOUNDATION
  *
- * Licensed under the EUPL, Version 1.1 or - as soon they
+ * Licensed under the EUPL, Version 1.1 or? as soon they
  * will be approved by the European Commission - subsequent
  * versions of the EUPL (the "Licence");
  * you may not use this work except in compliance with the
@@ -19,7 +19,7 @@
  * permissions and limitations under the Licence.
  */
 
-package eu.europeana.bootstrap;
+package eu.europeana;
 
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.webapp.WebAppContext;
@@ -28,13 +28,20 @@ import java.io.File;
 import java.io.FileFilter;
 
 /**
- * Bootstrap the entire system, including the ApacheSolr, resolver and cache servlet
+ * This class uses a jetty web server to fire up the Europeana back-end services (api, and solr) and
+ * then the portal.
  *
- * @author Gerald de Jong, Beautiful Code BV, <geralddejong@gmail.com>
+ * NOTE: it requires that the europeana.properties file points to port 8080 for these services:
+ *
+ * solr.baseUrl = http://localhost:8080/solr
+ * cacheUrl = http://localhost:8080/api/image/?
+ * resolverUrlPrefix  = http://localhost:8080/api/resolve
+ * displayPageUrl     = http://localhost:8080/portal/full-doc.html
+ *
+ * @author Gerald de Jong <geralddejong@gmail.com>
  */
 
-@Deprecated // background services are now started by the classes PortalFull and PortalLite themselves (mind the javadoc there)
-public class EuropeanaBackendStarter {
+public class PortalLite {
 
     public static void main(String... args) throws Exception {
         String root = "./";
@@ -49,13 +56,10 @@ public class EuropeanaBackendStarter {
             System.exit(1);
         }
         System.setProperty("solr.solr.home", root + "core/src/test/solr/home");
-        int port = 8983;
-        if (args.length > 0) {
-            port = Integer.parseInt(args[0]);
-        }
-        Server server = new Server(port);
+        Server server = new Server(8080);
         server.addHandler(new WebAppContext(root + "api/src/main/webapp", "/api"));
         server.addHandler(new WebAppContext(root + "core/src/test/solr/solr.war", "/solr"));
+        server.addHandler(new WebAppContext(root + "portal-lite/src/main/webapp", "/portal"));
         server.start();
     }
 
@@ -78,5 +82,4 @@ public class EuropeanaBackendStarter {
         }
         return false;
     }
-
 }

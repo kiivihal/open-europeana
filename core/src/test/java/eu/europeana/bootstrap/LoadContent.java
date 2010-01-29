@@ -21,52 +21,69 @@
 
 package eu.europeana.bootstrap;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import eu.europeana.database.DashboardDao;
 import eu.europeana.database.LanguageDao;
 import eu.europeana.database.StaticInfoDao;
+import eu.europeana.database.UserDao;
 import eu.europeana.database.domain.EuropeanaCollection;
 import eu.europeana.database.domain.ImportFileState;
 import eu.europeana.database.migration.DataMigration;
 import eu.europeana.incoming.ESEImporter;
 import eu.europeana.incoming.ImportFile;
 import eu.europeana.incoming.ImportRepository;
-import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.io.File;
-import java.io.IOException;
 
 
 /**
- * @author Sjoerd Siebinga <sjoerd.siebinga@gmail.com>
+ * @author Sjoerd Siebinga <sjoerd.siebinga@gmail.com>, Borys Omelayenko
  * @since Jun 29, 2009: 4:15:22 PM
  */
 public class LoadContent {
     private static final Logger log = Logger.getLogger(LoadContent.class);
 
+    ESEImporter eseImporter;
+    DashboardDao dashboardDao;
+    ImportRepository repository;
+    LanguageDao languageDao;
+    StaticInfoDao staticInfoDao;
+    protected UserDao userDao;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String... args) throws Exception {
+
+    	LoadContent contentLoader = new LoadContent();
+    	contentLoader.init();
+    	contentLoader.load((args.length == 0) || !args[0].equalsIgnoreCase("skip=true"));
+    }
+
+    public void init() throws Exception {
 
         ApplicationContext context = new ClassPathXmlApplicationContext(new String[]{
                 "/core-application-context.xml"
         });
 
-        ESEImporter eseImporter = (ESEImporter) context.getBean("normalizedEseImporter");
-        DashboardDao dashboardDao = (DashboardDao) context.getBean("dashboardDao");
-        ImportRepository repository = (ImportRepository) context.getBean("normalizedImportRepository");
-        LanguageDao languageDao = (LanguageDao) context.getBean("languageDao");
-
-        StaticInfoDao staticInfoDao = (StaticInfoDao) context.getBean("staticInfoDao");
-
-        load((args.length == 0) || !args[0].equalsIgnoreCase("skip=true"), eseImporter, dashboardDao, repository, languageDao,
-				staticInfoDao);
+        eseImporter = (ESEImporter) context.getBean("normalizedEseImporter");
+        dashboardDao = (DashboardDao) context.getBean("dashboardDao");
+        repository = (ImportRepository) context.getBean("normalizedImportRepository");
+        languageDao = (LanguageDao) context.getBean("languageDao");
+        staticInfoDao = (StaticInfoDao) context.getBean("staticInfoDao");
+        userDao = (UserDao) context.getBean("userDao");
     }
 
+    public void postLoad() {
+    	
+    }
+    
+	public UserDao getUserDao() {
+		return userDao;
+	}
 
-	public static void load(boolean loadStatic, ESEImporter eseImporter,
-			DashboardDao dashboardDao, ImportRepository repository,
-			LanguageDao languageDao, StaticInfoDao staticInfoDao)
+	public void load(boolean loadStatic)
 			throws IOException, Exception, InterruptedException {
 		// load static content etc.
         if (loadStatic) {
@@ -110,6 +127,6 @@ public class LoadContent {
         solr.stop();
         log.info("Stopping Solr server");
 
-        // check if default user exist otherwise create
+        postLoad();
 	}
 }

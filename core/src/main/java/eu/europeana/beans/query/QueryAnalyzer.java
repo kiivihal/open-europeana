@@ -52,6 +52,9 @@ public class QueryAnalyzer {
             if (BOOLEAN_KEYWORDS.contains(term)) {
                 return QueryType.ADVANCED_QUERY;
             }
+            else if (term.contains("*:*")) {
+                return QueryType.ADVANCED_QUERY;
+            }
             else if (term.startsWith("+") || term.startsWith("-")) {
                 return QueryType.ADVANCED_QUERY;
             }

@@ -23,6 +23,7 @@ package eu.europeana.web.util;
 
 import eu.europeana.database.domain.Language;
 import eu.europeana.database.domain.User;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.springframework.security.Authentication;
 import org.springframework.security.context.SecurityContextHolder;
 import org.springframework.web.servlet.LocaleResolver;
@@ -31,9 +32,7 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Utility methods for controllers
@@ -57,7 +56,8 @@ public class ControllerUtil {
         if (principal instanceof UserDaoDetailsService.UserHolder) {
             UserDaoDetailsService.UserHolder userHolder = (UserDaoDetailsService.UserHolder) authentication.getPrincipal();
             return userHolder.getUser();
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -99,7 +99,8 @@ public class ControllerUtil {
         }
         if (rowsString != null) {
             return Integer.parseInt(rowsString);
-        } else {
+        }
+        else {
             return -1;
         }
     }
@@ -158,7 +159,8 @@ public class ControllerUtil {
         StringBuffer requestURL = request.getRequestURL();
         if (request.getQueryString() != null) {
             requestURL.append("?").append(request.getQueryString());
-        } else if (request.getParameterMap() != null) {
+        }
+        else if (request.getParameterMap() != null) {
             requestURL.append(formatParameterMapAsQueryString(request.getParameterMap()));
         }
         return requestURL.toString();
@@ -177,5 +179,39 @@ public class ControllerUtil {
         }
         return output.toString();
     }
+
+    public static String[] getFilterQueriesAsPhrases(SolrQuery solrQuery) {
+        String[] filterQueries = solrQuery.getFilterQueries();
+        if (filterQueries == null) {
+            return filterQueries; // sometimes needed when the code expects null when no filterqueries are found
+        }
+        List<String> phraseFilterQueries = new ArrayList<String>(filterQueries.length);
+        for (String facetTerm : filterQueries) {
+            int colon = facetTerm.indexOf(":");
+            String facetName = facetTerm.substring(0, colon);
+            String facetValue = facetTerm.substring(colon + 1);
+            phraseFilterQueries.add(MessageFormat.format("{0}:\"{1}\"", facetName, facetValue));
+        }
+        return phraseFilterQueries.toArray(new String[phraseFilterQueries.size()]);
+    }
+
+    public static String[] getFilterQueriesWithoutPhrases(SolrQuery solrQuery) {
+        String[] filterQueries = solrQuery.getFilterQueries();
+        if (filterQueries == null) {
+            return filterQueries; // sometimes needed when the code expects null when no filterqueries are found
+        }
+        List<String> nonPhraseFilterQueries = new ArrayList<String>(filterQueries.length);
+        for (String facetTerm : filterQueries) {
+            int colon = facetTerm.indexOf(":");
+            String facetName = facetTerm.substring(0, colon);
+            String facetValue = facetTerm.substring(colon + 1);
+            if (facetValue.length() >= 2 && facetValue.startsWith("\"") && facetValue.endsWith("\"")) {
+                facetValue = facetValue.substring(1, facetValue.length() - 1);
+            }
+            nonPhraseFilterQueries.add(facetName+":"+facetValue);
+        }
+        return nonPhraseFilterQueries.toArray(new String[nonPhraseFilterQueries.size()]);
+    }
+
 
 }

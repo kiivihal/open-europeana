@@ -236,14 +236,12 @@ public class DashboardServiceImpl implements DashboardService {
         return languages;
     }
 
-    public Map<String, List<TranslationX>> fetchTranslations(Set<String> languageCodes) {
-        Map<String, List<Translation>> preconvert = languageDao.fetchTranslations(languageCodes);
-        Map<String, List<TranslationX>> translations = new HashMap<String, List<TranslationX>>();
-        for (Map.Entry<String, List<Translation>> entry : preconvert.entrySet()) {
-            List<TranslationX> value = new ArrayList<TranslationX>();
-            translations.put(entry.getKey(), value);
-            for (Translation translation : entry.getValue()) {
-                value.add(DataTransfer.convert(translation));
+    public List<TranslationX> fetchTranslations(String key, Set<String> languageCodes) {
+        MessageKey messageKey = languageDao.fetchMessageKey(key);
+        List<TranslationX> translations = new ArrayList<TranslationX>();
+        for (Translation translation : messageKey.getTranslations()) {
+            if (languageCodes.contains(translation.getLanguage().getCode())) {
+                translations.add(DataTransfer.convert(translation));
             }
         }
         return translations;
@@ -468,7 +466,7 @@ public class DashboardServiceImpl implements DashboardService {
     public boolean deleteCollectionByName(String collectionName) {
         try {
             log.info(String.format("Delete collection %s from Solr Index", collectionName));
-            solrServer.deleteByQuery("europeana_collection:\""+collectionName+"\"");
+            solrServer.deleteByQuery("europeana_collectionName:\""+collectionName+"\"");
             solrServer.commit();
             return true;
         }
