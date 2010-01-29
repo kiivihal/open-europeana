@@ -6,7 +6,7 @@ setup please consult *developing.md*
 
 ## Requirements ##
 
-* Java 1.6 or higher
+- Java 1.6 or higher
 - linux 2.5 or higher (Debian recommended)
 - postgresql database 8.3 or higher
 - ImageMagick 6.4 or higher
@@ -55,10 +55,9 @@ You can find the webapplications (henceforth referred to as war-files) in the ta
 
 ## Deploy components in Tomcat ##
 
-
-* Copy the cache.war, resolve.war, portal.war, dashboard.war to the tomcat deploy directory (i.e. webapps dir in the
+* Copy the api.war, portal.war, dashboard.war to the tomcat deploy directory (i.e. webapps dir in the
 Tomcat root) on the server.
-* Copy the europeana.properties.template file from ./portal/src/main/resources/europeana.properties to the server and change
+* Copy the europeana.properties.template file from `./portal/src/main/resources/europeana.properties` to the server and change
 relevant properties.
 * Add the europeana properties file to the tomcat startup parameters, e.g. -Deuropeana.config=/usr/local/tomcat/conf/europeana.properties
 
@@ -73,7 +72,7 @@ be deployed on Tomcat with the other components. Just remember to increase the h
 jetty root) on the server and rename to solr.war.
 * Copy the Solr Home from `./portal/src/test/solr/solr/` to the server (!recursively copy all files). Any location would do.
 Remember that the index is stored inside the Solr Home so make sure that there is enough disk space available where you place solr home.
-* add the Solr Home to the Jetty/Tomcat startup parameters, e.g. -Dsolr.solr.home=/path/to/solr/home"
+* add the Solr Home to the Jetty/Tomcat startup parameters, e.g. `-Dsolr.solr.home=/path/to/solr/home`
 
 
 ## Initiate the database ##
@@ -87,8 +86,8 @@ dev machine # pg_dump -E utf-8 -U your_db_name -f your_dump_file your_db_name
 server      # psql -U your_db_name europeana < your_dump_file
 
 If you do not have a development copy of the database you can use the following command to init the database.
-__todo__: add command to init db.
-
+<!--
+	TODO add command to init db.
+--> 
 
 To import and index the sample data please run the following command:
-//

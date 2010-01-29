@@ -4,12 +4,12 @@
 
 In order to promote collaboration and reuse of the software in the cultural heritage sector the software is developed in the open. You can download the source code at:
 
-* https://github.com/kiivihal/Europeana/downloads
+* https://github.com/kiivihal/europeana/downloads
 
 Or using version control
 
 Git
-:	`git clone git://github.com:kiivihal/Europeana.git`	
+:	`git clone git://github.com:kiivihal/europeana.git`	
 :	or fork it on *github.com*
 
 Subversion
