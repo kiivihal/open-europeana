@@ -104,8 +104,8 @@ public class ContactPageController {
     @RequestMapping(method = RequestMethod.POST)
     protected String handlePost(@ModelAttribute("contactForm") @Valid ContactForm form, BindingResult result, HttpServletRequest request) throws Exception {
         if (result.hasErrors()) {
-            form.setSubmitMessage("Your feedback was successfully sent. Thank you!");
-            clickStreamLogger.log(request, ClickStreamLogger.UserAction.FEEDBACK_SEND);
+            form.setSubmitMessage("There was a problem with your feedback. Please try to send again.");
+            clickStreamLogger.log(request, ClickStreamLogger.UserAction.FEEDBACK_SEND_FAILURE);
         }
         else {
             Map<String, Object> model = new TreeMap<String, Object>();
@@ -114,6 +114,7 @@ public class ContactPageController {
             userFeedbackSender.sendEmail(feedbackTo, feedbackFrom, "User Feedback", model);
             userFeedbackConfirmSender.sendEmail(form.getEmail(), feedbackFrom, "User Feedback", model);
             form.setSubmitMessage("Your feedback was successfully sent. Thank you!");
+            clickStreamLogger.log(request, ClickStreamLogger.UserAction.FEEDBACK_SEND);
         }
         clickStreamLogger.log(request, ClickStreamLogger.UserAction.CONTACT_PAGE);
         return "contact";

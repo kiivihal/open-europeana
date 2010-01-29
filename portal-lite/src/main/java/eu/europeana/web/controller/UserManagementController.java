@@ -22,16 +22,15 @@
 package eu.europeana.web.controller;
 
 import eu.europeana.database.UserDao;
-import eu.europeana.database.domain.StaticPageType;
 import eu.europeana.database.domain.User;
 import eu.europeana.query.ClickStreamLogger;
 import eu.europeana.web.util.ControllerUtil;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Gerald de Jong <geralddejong@gmail.com>
@@ -39,8 +38,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class UserManagementController {
-
-    private Logger log = Logger.getLogger(getClass());
 
     @Autowired
     private UserDao userDao;
@@ -88,7 +85,7 @@ public class UserManagementController {
             throw new IllegalArgumentException("Expected to find '" + SECURE + "' in the request URL");
         }
         String redirect = url.substring(0, securePos) + url.substring(securePos + SECURE.length());
-        log.info("redirecting to: " + redirect);
+        clickStreamLogger.log(request, ClickStreamLogger.UserAction.REDIRECT_TO_SECURE, "redirect="+redirect);
         return ControllerUtil.createModelAndViewPage("redirect:" + redirect);
     }
 }

@@ -158,6 +158,11 @@ public class DocIdWindowPagerImpl implements DocIdWindowPager {
     }
 
     @Override
+    public String getStartPage() {
+        return startPage;
+    }
+
+    @Override
     public boolean isNext() {
         return hasNext;
     }
