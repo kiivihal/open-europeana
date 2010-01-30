@@ -217,6 +217,9 @@ public class BeanQueryModelFactory implements QueryModelFactory {
                 if (facetField.getName().equalsIgnoreCase("LANGUAGE") || facetField.getName().equalsIgnoreCase("COUNTRY")) {
                     StringBuilder out = new StringBuilder();
                     List<FacetField.Count> list = facetField.getValues();
+                    if (list == null) {
+                        break;
+                    }
                     int counter = 0;
                     for (FacetField.Count count : list) {
                         counter++;

@@ -64,6 +64,18 @@ public class UserManagementController {
         return page;
     }
 
+    @RequestMapping("/logout-success.html")
+    public ModelAndView logoutSuccessHandler(HttpServletRequest request) throws Exception {
+        clickStreamLogger.log(request, ClickStreamLogger.UserAction.LOGOUT);
+        return ControllerUtil.createModelAndViewPage("redirect:/index.html");
+    }
+
+    @RequestMapping("/remember-me-theft.html")
+    public ModelAndView cookieTheftHandler(HttpServletRequest request) throws Exception {
+        clickStreamLogger.log(request, ClickStreamLogger.UserAction.LOGOUT_COOKIE_THEFT);
+        return ControllerUtil.createModelAndViewPage("redirect:/login.html");
+    }
+
     @RequestMapping("/logout.html")
     public ModelAndView logoutHandler(HttpServletRequest request) throws Exception {
         clickStreamLogger.log(request, ClickStreamLogger.UserAction.LOGOUT);

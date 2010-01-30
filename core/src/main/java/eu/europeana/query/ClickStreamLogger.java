@@ -120,6 +120,7 @@ public interface ClickStreamLogger {
         CHANGE_PASSWORD_FAILURE,
         LOGIN,
         LOGOUT,
+        LOGOUT_COOKIE_THEFT,
 
         // errors
         ERROR,

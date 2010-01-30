@@ -35,6 +35,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
+import java.util.Map;
 
 /**
  * @author Sjoerd Siebinga <sjoerd.siebinga@gmail.com>
@@ -68,7 +69,7 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
     public void log(HttpServletRequest request, UserAction action, String logString) {
         log.info(
                 MessageFormat.format(
-                        "[action={0}, {1}, {2}]",
+                        "[action={0}, {2}, {1}]",
                         action, printLogAffix(request), logString));
     }
 
@@ -156,11 +157,29 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
     private String getRequestUrl(HttpServletRequest request) {
         String base = ControllerUtil.getFullServletUrl(request);
         String queryStringParameters = request.getQueryString();
+        Map postParameters = request.getParameterMap();
         StringBuilder out = new StringBuilder();
+        String queryString;
         out.append(base);
         if (queryStringParameters != null) {
             out.append("?").append(queryStringParameters);
+            queryString = out.toString();
         }
-        return out.toString();
+        else if (postParameters.size() > 0) {
+            out.append("?");
+            for (Object entryKey : postParameters.entrySet()) {
+                Map.Entry entry = (Map.Entry) entryKey;
+                String key = entry.getKey().toString();
+                String[] values = (String[]) entry.getValue();
+                for (String value : values) {
+                    out.append(key).append("=").append(value).append("&");
+                }
+            }
+            queryString = out.toString().substring(0, out.toString().length() - 1);
+        }
+        else {
+            queryString = out.toString();
+        }
+        return queryString;
     }
 }
