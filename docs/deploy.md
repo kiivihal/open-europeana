@@ -1,8 +1,16 @@
-# How to deploy on server #
+Title:			How to Deploy Open Europeana  
+Author:			Sjoerd Siebinga  
+Affiliation:	Open Europeana 
+Date:			January 30, 2010  
+Copyright:		2010 Open Europeana  
+				This work is licensed under a Creative Commons License.  
+				http://creativecommons.org/licenses/by-sa/2.5/
+Keywords:		
+
+# How to deploy Open Europeana #
 
 In this document you can find the instructions how to deploy the *Europeana Framework* on a server environment. For development
-setup please consult *developing.md*
-
+setup please consult *develop.md*
 
 ## Requirements ##
 
@@ -12,16 +20,16 @@ setup please consult *developing.md*
 - ImageMagick 6.4 or higher
 - ESP Ghostscript 8.15.2 or higher
 - A servlet container (like Tomcat / Jetty 6 or higher)
-- SMTP server to send emails
-
+- Access to a SMTP server to send emails
 
 ## Build Components ##
 
 Maven 2 (2.10 or higher) is used to build the _Europeana Framework_ so make sure it is installed on your system and is available from the command-line. 
 
-Go to the root of the project, where the `README_FIRST.md` file is found. You can build the components in two ways: run the `build_europeana.sh` build script or perform the steps manually.
+Go to the root of the project, i.e. where you find the `core`, `portal-lite`, etc. module folders. You can build the components in two ways: run the `build_europeana.sh` build script or perform the steps manually.
 
 ### Build Script ###
+
 
 Make the file executable and execute it.
 
@@ -51,7 +59,7 @@ Build `dashboard` component.
 	cd ../dashboard
 	mvn clean package
 
-You can find the webapplications (henceforth referred to as war-files) in the target directories of each of the module. So you can find the `portal.war` in `./portal-lite/target/portal.war`
+You can find the web-applications (henceforth referred to as war-files) in the target directories of each of the module. So you can find the `portal.war` in `./portal-lite/target/portal.war`
 
 ## Deploy components in Tomcat ##
 
@@ -67,11 +75,10 @@ NB Also make sure that tomcat has enough heap space. We recommend `-Xmx2048m`.
 
 
 Make sure that Jetty is installed. (We prefer to use Jetty for solr deployment. However, there is no reason why it cannot
-be deployed on Tomcat with the other components. Just remember to increase the heap space if you do so. )
-* Copy `./core/src/test/solr/solr.war` to the jetty deploy directory (i.e. webapps dir in the
-jetty root) on the server and rename to solr.war.
-* Copy the Solr Home from `./portal/src/test/solr/solr/` to the server (!recursively copy all files). Any location would do.
-Remember that the index is stored inside the Solr Home so make sure that there is enough disk space available where you place solr home.
+be deployed on Tomcat with the other components. Just remember to increase the **heap size** of the JVM if you do so.)
+
+* Copy `./core/src/test/solr/solr.war` to the jetty deploy directory (i.e. webapps dir in the jetty root) on the server and rename to solr.war.
+* Copy the Solr Home from `./portal/src/test/solr/solr/` to the server (!recursively copy all files). Any location would do. Remember that the index is stored inside the Solr Home so make sure that there is enough disk space available where you place solr home.
 * add the Solr Home to the Jetty/Tomcat startup parameters, e.g. `-Dsolr.solr.home=/path/to/solr/home`
 
 
