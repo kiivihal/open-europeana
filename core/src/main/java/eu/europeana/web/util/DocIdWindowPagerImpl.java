@@ -79,7 +79,12 @@ public class DocIdWindowPagerImpl implements DocIdWindowPager {
         }
         if (pager.hasNext) {
             pager.nextInt = fullDocUriInt + 1;
-            pager.nextUri = list.get(2).getEuropeanaUri();
+            if (pager.hasPrevious) {
+                pager.nextUri = list.get(2).getEuropeanaUri();
+            }
+            else {
+                pager.nextUri = list.get(1).getEuropeanaUri();
+            }
         }
         pager.docIdWindow = new DocIdWindowImpl(list, offset, numFound);
         return pager;

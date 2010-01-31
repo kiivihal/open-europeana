@@ -74,7 +74,7 @@ First read the documentation in the docs directory and on the [wiki](https://git
 Some of the core committers to Open-Europeana also offer commercial installation, configuration, deployment, web-design and development support. 
 
 * Beautiful Code BV. ([http://www.beautifulcode.eu](http://www.beautifulcode.eu "Beautiful Code BV."); geralddejong@gmail.com)
-* Whitespace Webdevelopment (ericmeulen@gmail.com)
+* Whitespace Webdevelopment (eric.meulen@gmail.com)
 * Kuri Koer Software ([http://www.kurikoer.org](http://www.kurikoer.org); info@kurikoer.org)
 
 ## Main Contributors ##
