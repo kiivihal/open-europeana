@@ -6,7 +6,7 @@ In order to promote collaboration and reuse of the software in the Cultural Heri
 
 Or using [git] version control
 
-	git clone git://github.com:kiivihal/open-europeana.git	
+	git clone git://github.com/kiivihal/open-europeana.git
 
 or fork it on [github.com][open-europeana]
 
