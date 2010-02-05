@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 public class DashboardServiceStub extends RemoteServiceServlet implements DashboardService {
     private static final long serialVersionUID = 4889955602075719736L;
@@ -84,20 +83,8 @@ public class DashboardServiceStub extends RemoteServiceServlet implements Dashbo
         return service().checkImportFileStatus(fileName, normalized);
     }
 
-    public List<String> fetchMessageKeys() {
-        return service().fetchMessageKeys();
-    }
-
     public List<LanguageX> fetchLanguages() {
         return service().fetchLanguages();
-    }
-
-    public List<TranslationX> fetchTranslations(String key, Set<String> languages) {
-        return service().fetchTranslations(key, languages);
-    }
-
-    public TranslationX setTranslation(String key, String language, String value) {
-        return service().setTranslation(key, language, value);
     }
 
     public String fetchCacheUrl() {
@@ -142,58 +129,6 @@ public class DashboardServiceStub extends RemoteServiceServlet implements Dashbo
 
     public List<SavedSearchX> fetchSavedSearches(UserX user) {
         return service().fetchSavedSearches(user);
-    }
-
-    public List<String> fetchPartnerSectors() {
-        return service().fetchPartnerSectors();
-    }
-
-    public List<PartnerX> fetchPartners() {
-        return service().fetchPartners();
-    }
-
-    public List<CountryX> fetchCountries() {
-        return service().fetchCountries();
-    }
-
-    public List<ContributorX> fetchContributors() {
-        return service().fetchContributors();
-    }
-
-    public PartnerX savePartner(PartnerX partner) {
-        return service().savePartner(partner);
-    }
-
-    public ContributorX saveContributor(ContributorX contributor) {
-        return service().saveContributor(contributor);
-    }
-
-    public boolean removePartner(Long partnerId) {
-        return service().removePartner(partnerId);
-    }
-
-    public boolean removeContributor(Long contributorId) {
-        return service().removeContributor(contributorId);
-    }
-
-    public List<String> fetchStaticPageTypes() {
-        return service().fetchStaticPageTypes();
-    }
-
-    public StaticPageX fetchStaticPage(String pageType, LanguageX language) {
-        return service().fetchStaticPage(pageType, language);
-    }
-
-    public StaticPageX saveStaticPage(Long staticPageId, String content) {
-        return service().saveStaticPage(staticPageId, content);
-    }
-
-    public void removeMessageKey(String key) {
-        service().removeMessageKey(key);
-    }
-
-    public void addMessageKey(String key) {
-        service().addMessageKey(key);
     }
 
     public List<DashboardLogX> fetchLogEntriesFrom(Long topId, int pageSize) {

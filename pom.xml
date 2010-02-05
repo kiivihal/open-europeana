@@ -142,9 +142,9 @@
                 <version>1.4</version>
             </dependency>
             <dependency>
-                <groupId>commons-httpclient</groupId>
-                <artifactId>commons-httpclient</artifactId>
-                <version>3.1</version>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.0.1</version>
             </dependency>
             <dependency>
                 <groupId>commons-collections</groupId>
@@ -389,9 +389,9 @@
         </dependencies>
     </dependencyManagement>
     <properties>
-        <europeana.core.version>1.0.1</europeana.core.version>
+        <europeana.core.version>1.0.2</europeana.core.version>
         <europeana.sip-creator.version>2.8</europeana.sip-creator.version>
-        <europeana.portal.version>0.6</europeana.portal.version>
+        <europeana.portal.version>0.5</europeana.portal.version>
         <europeana.api.version>0.1</europeana.api.version>
 
         <jdkLevel>1.6</jdkLevel>
@@ -403,7 +403,7 @@
         <hibernate.annotations.version>3.4.0.GA</hibernate.annotations.version>
         <hibernate.entitymanager.version>3.3.2.GA</hibernate.entitymanager.version>
         <hibernate.validator.version>4.0.2.GA</hibernate.validator.version>
-        
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 

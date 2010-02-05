@@ -4,7 +4,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import eu.europeana.dashboard.client.dto.*;
 
 import java.util.List;
-import java.util.Set;
 
 public interface DashboardServiceAsync {
 
@@ -40,13 +39,7 @@ public interface DashboardServiceAsync {
 
     void checkImportFileStatus(String fileName, boolean normalized, AsyncCallback<ImportFileX> async);
 
-    void fetchMessageKeys(AsyncCallback<List<String>> async);
-
     void fetchLanguages(AsyncCallback<List<LanguageX>> async);
-
-    void fetchTranslations(String key, Set<String> languageCodes, AsyncCallback<List<TranslationX>> async);
-
-    void setTranslation(String key, String language, String value, AsyncCallback<TranslationX> async);
 
     void fetchCacheUrl(AsyncCallback<String> async);
 
@@ -69,32 +62,6 @@ public interface DashboardServiceAsync {
     void deleteAllOrphans(AsyncCallback<Void> async);
 
     void fetchSavedSearches(UserX userX, AsyncCallback<List<SavedSearchX>> async);
-
-    void fetchPartnerSectors(AsyncCallback<List<String>> async);
-
-    void fetchPartners(AsyncCallback<List<PartnerX>> async);
-
-    void fetchCountries(AsyncCallback<List<CountryX>> async);
-
-    void fetchContributors(AsyncCallback<List<ContributorX>> async);
-
-    void savePartner(PartnerX partner, AsyncCallback<PartnerX> async);
-
-    void saveContributor(ContributorX contributor, AsyncCallback<ContributorX> async);
-
-    void removePartner(Long partnerId, AsyncCallback<Boolean> async);
-
-    void removeContributor(Long contributorId, AsyncCallback<Boolean> async);
-
-    void fetchStaticPageTypes(AsyncCallback<List<String>> async);
-
-    void fetchStaticPage(String pageType, LanguageX language, AsyncCallback<StaticPageX> async);
-
-    void saveStaticPage(Long staticPageId, String content, AsyncCallback<StaticPageX> async);
-
-    void removeMessageKey(String key, AsyncCallback<Void> async);
-
-    void addMessageKey(String key, AsyncCallback<Void> async);
 
     void fetchLogEntriesFrom(Long topId, int pageSize, AsyncCallback<List<DashboardLogX>> async);
 

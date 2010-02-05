@@ -53,14 +53,6 @@ public interface DashboardMessages extends Messages {
 
     String haltedWithAnError();
 
-    String enterMessageKey();
-
-    String translationSubmit();
-
-    String translationReset();
-
-    String pleaseWait();
-
     String serverProblem();
 
     String yesIAmSure();
@@ -185,17 +177,9 @@ public interface DashboardMessages extends Messages {
 
     String typeSearchTerm();
 
-    String partnersTab();
-
-    String addPartnerTitle(String text);
-
     String namePrompt();
 
     String urlPrompt();
-
-    String addContributorTitle(String text);
-
-    String contributorsTab();
 
     String providerIdPrompt();
 
@@ -223,20 +207,6 @@ public interface DashboardMessages extends Messages {
 
     String accessDenied();
 
-    String staticPagesTag();
-
-    String selectPage();
-
-    String selectLanguage();
-
-    String previewPage();
-
-    String editHtml();
-
-    String revert();
-
-    String numberOfPartnersPrompt();
-
     String languages();
 
     String userEnabled();
@@ -244,8 +214,6 @@ public interface DashboardMessages extends Messages {
     String updateThisUser();
 
     String deleteThisUser();
-
-    String messageKey();
 
     String add();
 

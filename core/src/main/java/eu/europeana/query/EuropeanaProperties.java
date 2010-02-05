@@ -123,9 +123,6 @@ public class EuropeanaProperties extends Properties {
             "db.password",
             "solr.baseUrl",
             "solr.chunkSize",
-            "piwik.enabled",
-            "piwik.jsUrl",
-            "piwik.logUrl",
             "smtp.host",
             "smtp.username",
             "smtp.password",
@@ -136,7 +133,6 @@ public class EuropeanaProperties extends Properties {
             "feedback.to",
             "exception.to",
             "feedback.from",
-            "template.path",
             "cacheUrl",
             "resolverUrlPrefix",
             "displayPageUrl",
@@ -145,8 +141,8 @@ public class EuropeanaProperties extends Properties {
             "cache.imageMagickPath",
             "cache.cacheRoot",
             "debug",
-            "message.source",
-            "message.static_pages",
-            "message.network",
+            "static.page.path",
+            "message.resource",
+            "message.cache.seconds"
     };
 }

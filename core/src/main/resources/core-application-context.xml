@@ -106,26 +106,11 @@
 
     <bean name="dashboardDao" class="eu.europeana.database.dao.DashboardDaoImpl"/>
 
-    <bean name="languageDao" class="eu.europeana.database.dao.LanguageDaoImpl"/>
-
     <bean name="tokenRepositoryService" class="eu.europeana.web.util.TokenRepositoryService"/>
 
     <bean name="tokenDao" class="eu.europeana.database.dao.TokenDaoImpl"/>
 
     <bean name="tokenService" class="eu.europeana.web.util.TokenService"/>
-
-    <bean id="httpClient" class="org.apache.commons.httpclient.HttpClient">
-        <constructor-arg>
-            <bean class="org.apache.commons.httpclient.MultiThreadedHttpConnectionManager">
-                <property name="params">
-                    <bean class="org.apache.commons.httpclient.params.HttpConnectionManagerParams">
-                        <property name="maxTotalConnections" value="512"/>
-                        <property name="defaultMaxConnectionsPerHost" value="64"/>
-                    </bean>
-                </property>
-            </bean>
-        </constructor-arg>
-    </bean>
 
     <bean id="solrServer" class="org.apache.solr.client.solrj.impl.CommonsHttpSolrServer">
         <constructor-arg value="#{europeanaProperties['solr.baseUrl']}"/>
@@ -153,10 +138,8 @@
 
     <bean id="normalizedEseImporter" class="eu.europeana.incoming.ESEImporterImpl">
         <property name="importRepository" ref="normalizedImportRepository"/>
-        <property name="solrServer" ref="solrServer"/>
         <property name="normalized" value="true"/>
-        <property name="chunkSize" value="1000"/>
-        <property name="annotationProcessor" ref="annotationProcessor"/>
+        <property name="chunkSize" value="#{europeanaProperties['solr.chunkSize']}"/>
         <property name="beanClass">
             <value type="java.lang.Class">eu.europeana.beans.AllFieldBean</value>
         </property>
@@ -182,13 +165,29 @@
         <property name="chunkSize" value="30"/>
     </bean>
 
+    <bean id="httpClient" class="org.apache.commons.httpclient.HttpClient">
+        <constructor-arg>
+            <bean class="org.apache.commons.httpclient.MultiThreadedHttpConnectionManager">
+                <property name="params">
+                    <bean class="org.apache.commons.httpclient.params.HttpConnectionManagerParams">
+                        <property name="maxTotalConnections" value="64"/>
+                        <property name="defaultMaxConnectionsPerHost" value="8"/>
+                        <property name="connectionTimeout" value="30000"/>
+                        <property name="staleCheckingEnabled" value="true"/>
+                    </bean>
+                </property>
+            </bean>
+        </constructor-arg>
+    </bean>
+
     <bean id="digitalObjectCache" class="eu.europeana.cache.DigitalObjectCacheImpl">
+        <property name="httpClient" ref="httpClient"/>
         <property name="imageMagickPath" value="#{europeanaProperties['cache.imageMagickPath']}"/>
         <property name="root" value="#{europeanaProperties['cache.cacheRoot']}"/>
     </bean>
 
     <bean id="freemarkerConfig" class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
-        <property name="templateLoaderPath" value="#{europeanaProperties['template.path']}"/>
+        <property name="templateLoaderPath" value="WEB-INF/templates/"/>
     </bean>
 
     <bean id="clickStreamLogger" class="eu.europeana.web.util.ClickStreamLoggerImpl"/>
@@ -210,8 +209,6 @@
     <bean id="carouselItemSampler" class="eu.europeana.web.util.CarouselItemSampler">
         <property name="displayCount" value="40"/>
     </bean>
-
-    <bean id="partnerListSampler" class="eu.europeana.web.util.PartnerListSampler"/>
 
     <bean id="emailSenderForExceptions" class="eu.europeana.web.util.EmailSender">
         <property name="template" value="/email/exception"/>
@@ -261,16 +258,16 @@
         <property name="repeatInterval" value="11000"/>
     </bean>
 
-    <bean id="partnerListRefreshTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+    <bean id="staticPageCacheTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
         <property name="jobDetail">
             <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-                <property name="targetObject" ref="partnerListSampler"/>
-                <property name="targetMethod" value="refresh"/>
+                <property name="targetObject" ref="staticPageCache"/>
+                <property name="targetMethod" value="invalidate"/>
                 <property name="concurrent" value="false"/>
             </bean>
         </property>
-        <property name="startDelay" value="0"/>
-        <property name="repeatInterval" value="31000"/>
+        <property name="startDelay" value="600000"/>
+        <property name="repeatInterval" value="600000"/>
     </bean>
 
     <bean id="registrationEmailSender" class="eu.europeana.web.util.TokenReplyEmailSender">

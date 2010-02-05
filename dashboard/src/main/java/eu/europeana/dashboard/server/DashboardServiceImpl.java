@@ -25,7 +25,6 @@ import eu.europeana.cache.DigitalObjectCache;
 import eu.europeana.dashboard.client.DashboardService;
 import eu.europeana.dashboard.client.dto.*;
 import eu.europeana.database.DashboardDao;
-import eu.europeana.database.LanguageDao;
 import eu.europeana.database.StaticInfoDao;
 import eu.europeana.database.UserDao;
 import eu.europeana.database.domain.*;
@@ -33,7 +32,10 @@ import eu.europeana.incoming.ESEImporter;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DashboardServiceImpl implements DashboardService {
@@ -45,7 +47,6 @@ public class DashboardServiceImpl implements DashboardService {
     private ESEImporter normalizedImporter;
     private ESEImporter sandboxImporter;
     private DashboardDao dashboardDao;
-    private LanguageDao languageDao;
     private DigitalObjectCache digitalObjectCache;
     private StaticInfoDao staticInfoDao;
     private UserDao userDao;
@@ -53,10 +54,6 @@ public class DashboardServiceImpl implements DashboardService {
 
     public void setDashboardDao(DashboardDao dashboardDao) {
         this.dashboardDao = dashboardDao;
-    }
-
-    public void setLanguageDao(LanguageDao languageDao) {
-        this.languageDao = languageDao;
     }
 
     public void setStaticInfoDao(StaticInfoDao staticInfoDao) {
@@ -223,34 +220,14 @@ public class DashboardServiceImpl implements DashboardService {
         return normalized ? normalizedImporter : sandboxImporter;
     }
 
-    public List<String> fetchMessageKeys() {
-        return languageDao.fetchMessageKeyStrings();
-    }
-
     public List<LanguageX> fetchLanguages() {
-        EnumSet<Language> activeLanguages = languageDao.getActiveLanguages();
         List<LanguageX> languages = new ArrayList<LanguageX>(Language.values().length);
-        for (Language active : activeLanguages) {
+        for (Language active : Language.values()) {
             languages.add(DataTransfer.convert(active));
         }
         return languages;
     }
 
-    public List<TranslationX> fetchTranslations(String key, Set<String> languageCodes) {
-        MessageKey messageKey = languageDao.fetchMessageKey(key);
-        List<TranslationX> translations = new ArrayList<TranslationX>();
-        for (Translation translation : messageKey.getTranslations()) {
-            if (languageCodes.contains(translation.getLanguage().getCode())) {
-                translations.add(DataTransfer.convert(translation));
-            }
-        }
-        return translations;
-    }
-
-    public TranslationX setTranslation(String key, String languageCode, String value) {
-        audit("set translation " + key + "/" + languageCode + "=" + value);
-        return DataTransfer.convert(languageDao.setTranslation(key, Language.findByCode(languageCode), value));
-    }
 
     public String fetchCacheUrl() {
         return cacheUrl;
@@ -343,91 +320,6 @@ public class DashboardServiceImpl implements DashboardService {
             result.add(DataTransfer.convert(search));
         }
         return result;
-    }
-
-    public List<String> fetchPartnerSectors() {
-        List<String> sectors = new ArrayList<String>();
-        for (PartnerSector ps : PartnerSector.values()) {
-            sectors.add(ps.toString());
-        }
-        return sectors;
-    }
-
-    public List<PartnerX> fetchPartners() {
-        List<PartnerX> results = new ArrayList<PartnerX>();
-        for (Partner partner : staticInfoDao.getAllPartnerItems()) {
-            results.add(DataTransfer.convert(partner));
-        }
-        return results;
-    }
-
-    public List<CountryX> fetchCountries() {
-        List<CountryX> countries = new ArrayList<CountryX>();
-        for (Country c : Country.values()) {
-            countries.add(DataTransfer.convert(c));
-        }
-        return countries;
-    }
-
-    public List<ContributorX> fetchContributors() {
-        List<ContributorX> results = new ArrayList<ContributorX>();
-        for (Contributor contributor : staticInfoDao.getAllContributorsByIdentifier()) {
-            results.add(DataTransfer.convert(contributor));
-        }
-        return results;
-    }
-
-    public PartnerX savePartner(PartnerX partnerX) {
-        audit("save partner: " + partnerX.getName());
-        Partner partner = DataTransfer.convert(partnerX);
-        partner = staticInfoDao.savePartner(partner);
-        return DataTransfer.convert(partner);
-    }
-
-    public ContributorX saveContributor(ContributorX contributorX) {
-        audit("save contributor: " + contributorX.getOriginalName());
-        Contributor contributor = DataTransfer.convert(contributorX);
-        contributor = staticInfoDao.saveContributor(contributor);
-        return DataTransfer.convert(contributor);
-    }
-
-    public boolean removePartner(Long partnerId) {
-        audit("remove partner: " + partnerId);
-        return staticInfoDao.removePartner(partnerId);
-    }
-
-    public boolean removeContributor(Long contributorId) {
-        audit("remove contributor: " + contributorId);
-        return staticInfoDao.removeContributor(contributorId);
-    }
-
-    public List<String> fetchStaticPageTypes() {
-        List<String> pageTypes = new ArrayList<String>();
-        for (StaticPageType pageType : StaticPageType.values()) {
-            pageTypes.add(pageType.toString());
-        }
-        return pageTypes;
-    }
-
-    public StaticPageX fetchStaticPage(String pageType, LanguageX language) {
-        StaticPage page = staticInfoDao.getStaticPage(StaticPageType.valueOf(pageType), Language.findByCode(language.getCode()));
-        return DataTransfer.convert(page);
-    }
-
-    public StaticPageX saveStaticPage(Long staticPageId, String content) {
-        StaticPage page = staticInfoDao.updateStaticPage(staticPageId, content);
-        audit("save static page: " + staticPageId);
-        return DataTransfer.convert(page);
-    }
-
-    public void removeMessageKey(String key) {
-        audit("remove message key: " + key);
-        languageDao.removeMessageKey(key);
-    }
-
-    public void addMessageKey(String key) {
-        audit("add message key: " + key);
-        languageDao.addMessagekey(key);
     }
 
     public List<DashboardLogX> fetchLogEntriesFrom(Long topId, int pageSize) {

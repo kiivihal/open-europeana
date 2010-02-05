@@ -103,7 +103,6 @@ public class ESEImporterImpl implements ESEImporter {
         this.annotationProcessor = annotationProcessor;
     }
 
-    @Autowired
     public void setBeanClass(Class<?> beanClass) {
         this.beanClass = beanClass;
     }
@@ -173,6 +172,11 @@ public class ESEImporterImpl implements ESEImporter {
             active.add(processor.getFile());
         }
         return active;
+    }
+
+    @Override
+    public void commit() throws IOException, SolrServerException {
+        solrServer.commit();
     }
 
     private class ImportProcessor implements Runnable, Processor {
@@ -365,7 +369,7 @@ public class ESEImporterImpl implements ESEImporter {
         private void indexRecordList() throws IOException, SolrServerException {
             log.info("sending "+recordList.size()+" records to solr");
             solrServer.add(recordList);
-            solrServer.commit();
+//            solrServer.commit();       // It is better to use the  autocommit from solr
             recordList.clear();
         }
 
