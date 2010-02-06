@@ -107,7 +107,7 @@ public class DashboardDaoImpl implements DashboardDao {
 
     @Transactional
     public List<EuropeanaCollection> fetchCollections(String prefix) {
-        Query query = entityManager.createQuery("select c from EuropeanaCollection c where c.name like :prefix ");
+        Query query = entityManager.createQuery("select c from EuropeanaCollection c where c.name like :prefix");
         query.setParameter("prefix", prefix + "%");
         return (List<EuropeanaCollection>) query.getResultList();
     }
