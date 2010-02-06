@@ -28,7 +28,7 @@ import java.util.List;
 @Controller
 public class SiteMapController {
 
-    private static final int MAX_RECORDS_PER_SITEMAP_FILE = 10000;
+    private static final int MAX_RECORDS_PER_SITEMAP_FILE = 1000;
 
     @Value("#{europeanaProperties['displayPageUrl']}")
     private String fullViewUrl;

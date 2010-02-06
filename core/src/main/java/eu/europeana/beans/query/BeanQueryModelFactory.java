@@ -218,6 +218,7 @@ public class BeanQueryModelFactory implements QueryModelFactory {
     public SiteMapBeanView getSiteMapBeanView(String europeanaCollectionName, int rowsToBeReturned, int pageNumber) throws EuropeanaQueryException, SolrServerException  {
         SolrQuery solrQuery = new SolrQuery("europeana_collectionName:"+europeanaCollectionName);
         solrQuery.setRows(rowsToBeReturned);
+        solrQuery.setFields("europeana_uri", "timestamp");
         solrQuery.setStart(pageNumber * rowsToBeReturned);
         QueryResponse queryResponse = solrServer.query(solrQuery);
         return new SiteMapBeanViewImpl(europeanaCollectionName, queryResponse, rowsToBeReturned);
