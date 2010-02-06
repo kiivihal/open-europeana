@@ -4,7 +4,7 @@
   <#list entries as entry>
   <sitemap>
     <loc>${entry.loc}</loc>
-    <lastmod>${entry.lastmod}</lastmod>
+    <lastmod>${entry.lastmod?string("yyyy-MM-dd")}</lastmod>
   </sitemap>
   </#list>
 </sitemapindex>
