@@ -21,8 +21,11 @@
 
 package eu.europeana.cache;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -41,8 +44,10 @@ public class CacheHash {
     private Map<String, MimeType> mimeMap = new HashMap<String, MimeType>();
     private Map<String, MimeType> extensionMap = new HashMap<String, MimeType>();
     private final MessageDigest digest;
+    private final String[] type_entries = {"ORIGINAL", "BRIEF_DOC", "FULL_DOC"};
+    private final String[] dir_entries = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"};
 
-    CacheHash() {
+    public CacheHash() {
         try {
             digest = MessageDigest.getInstance("SHA-256");
         }
@@ -116,18 +121,21 @@ public class CacheHash {
     }
 
     private File getCacheRoot(File root, String hash) {
+//        if (!root.exists()) {
+//            createNewStyleCacheDir(root);
+//        }
         File cacheRoot = new File(root, getDirectory(hash));
-        if (!cacheRoot.exists()) {
+        if (!cacheRoot.exists()) { // this should never happen
             cacheRoot.mkdirs();
         }
         return cacheRoot;
     }
 
-    private String getDirectory(String hash) {
+    public String getDirectory(String hash) {
         return hash.substring(0, 2) + File.separator + hash.substring(2, 4);
     }
 
-    private String createHash(String uri) {
+    public String createHash(String uri) {
         byte[] raw;
         synchronized (digest) {
             digest.reset();
@@ -162,4 +170,53 @@ public class CacheHash {
             (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F'
     };
 
+    void createNewStyleCacheDir(File root) throws IOException {
+        int counter = 0;
+        for (String type_entry : type_entries) {
+            for (String first_entry : dir_entries) {
+                for (String second_entry : dir_entries) {
+                    for (String third_entry : dir_entries) {
+                        for (String fourth_entry : dir_entries) {
+                            String directoryString = String.format("%s%s%s%s%s", first_entry, second_entry, File.separator, third_entry, fourth_entry);
+                            FileUtils.forceMkdir(new File(root.toString() + File.separator + type_entry + File.separator + directoryString));
+                            counter++;
+                        }
+                    }
+                    counter++;
+                }
+            }
+        }
+        System.out.println("directories created: " + counter);
+    }
+
+    private void createOldStyleCacheDir(File root) throws IOException {
+        int counter = 0;
+        for (String first_entry : dir_entries) {
+            for (String second_entry : dir_entries) {
+                for (String third_entry : dir_entries) {
+                    String directoryString = String.format("%s%s%s", first_entry, second_entry, third_entry);
+                    FileUtils.forceMkdir(new File(root.toString() + File.separator + directoryString));
+                    counter++;
+                }
+            }
+        }
+        System.out.println("directories created: " + counter);
+    }
+
+    private void createThreeTypeCacheDir(File root) throws IOException {
+        int counter = 0;
+        for (String type_entry : type_entries) {
+            for (String first_entry : dir_entries) {
+                for (String second_entry : dir_entries) {
+                    for (String third_entry : dir_entries) {
+                        String directoryString = String.format("%s%s%s", first_entry, second_entry, third_entry);
+                        System.out.println(directoryString);
+                        FileUtils.forceMkdir(new File(root.toString() + File.separator + type_entry + File.separator + directoryString));
+                        counter++;
+                    }
+                }
+            }
+        }
+        System.out.println("directories created: " + counter);
+    }
 }
