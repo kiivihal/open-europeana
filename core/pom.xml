@@ -95,53 +95,30 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>sql-maven-plugin</artifactId>
+                <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <autocommit>true</autocommit>
-                    <username>europeana</username>
-                    <password>culture</password>
-                    <url>jdbc:postgresql://europeana.siebinga.org/europeana</url>
-                    <driver>org.postgresql.Driver</driver>
-                    <encoding>UTF-8</encoding>
-                    <srcFiles>
-                        <srcFile>src/main/config/insert-test-users.sql</srcFile>
-                    </srcFiles>
+                    <appendAssemblyId>true</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                    <archive>
+                        <manifest>
+                            <mainClass>eu.europeana.bootstrap.ContentLoader</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.6.1</version>
-                <configuration>
-                    <!--
-                    <detectLinks>true</detectLinks>
-                    http://jira.codehaus.org/browse/MJAVADOC-273
-                    -->
-                    <excludePackageNames>*.migration.*, *.json.*, *.integration.*, *.dao.*</excludePackageNames>
-                </configuration>
-            </plugin>
-            <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-              <configuration>
-                <appendAssemblyId>true</appendAssemblyId>
-                <descriptorRefs>
-                  <descriptorRef>jar-with-dependencies</descriptorRef>
-                </descriptorRefs>
-              </configuration>
-              <executions>
-                <execution>
-                  <id>make-assembly</id>
-                  <phase>package</phase>
-                  <goals>
-                    <goal>assembly</goal>
-                  </goals>
-                </execution>
-              </executions>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>assembly</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
-
     <dependencies>
         <dependency>
             <groupId>postgresql</groupId>
@@ -173,7 +150,15 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
         </dependency>
         <dependency>
             <groupId>quartz</groupId>
@@ -182,16 +167,14 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>spring-support</artifactId>
-                    <groupId>org.springframework</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>spring-context</artifactId>
-                    <groupId>org.springframework</groupId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
         </dependency>
         <dependency>
             <groupId>c3p0</groupId>
@@ -243,10 +226,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-        </dependency>
-        <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
         </dependency>
@@ -282,11 +261,11 @@
             <artifactId>mail</artifactId>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.osuosl.srw</groupId>-->
-            <!--<artifactId>srw_lucene</artifactId>-->
-            <!--&lt;!&ndash;suppress MavenModelInspection &ndash;&gt;-->
+        <!--<groupId>org.osuosl.srw</groupId>-->
+        <!--<artifactId>srw_lucene</artifactId>-->
+        <!--&lt;!&ndash;suppress MavenModelInspection &ndash;&gt;-->
         <!--</dependency>-->
-         <dependency>
+        <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-solrj</artifactId>
         </dependency>

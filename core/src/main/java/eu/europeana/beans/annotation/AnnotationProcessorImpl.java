@@ -25,7 +25,12 @@ import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Interpret the annotations in the beans which define the search model, and
@@ -42,6 +47,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     private String [] facetFieldStrings;
     private List<String> solrFieldList;
     private Map<Class<?>, EuropeanaBean> beanMap = new HashMap<Class<?>, EuropeanaBean>();
+    private HashMap<String, String> facetMap = new HashMap<String, String>();
 
     /**
      * Configure the annotation processor to analyze the given list of classes
@@ -82,11 +88,16 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
             facetFieldStrings = new String[facetFields.size()];
             int index = 0;
             for (EuropeanaField facetField : facetFields) {
-                facetFieldStrings[index] = facetField.getName();
+                facetFieldStrings[index] = String.format("{!ex=%s}%s", facetField.getFacetPrefix(), facetField.getFacetName());
                 index++;
             }
         }
         return facetFieldStrings;
+    }
+
+    @Override
+    public HashMap<String, String> getFacetMap() {
+        return facetMap;
     }
 
     @Override
@@ -107,6 +118,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
                         EuropeanaFieldImpl europeanaField = new EuropeanaFieldImpl(field);
                         if (europeanaField.isFacet()) {
                             facetFields.add(europeanaField);
+                            facetMap.put(europeanaField.getFacetName(), europeanaField.getFacetPrefix());
                         }
                         solrFields.add(europeanaField);
                         europeanaBean.addField(europeanaField);
@@ -155,19 +167,6 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
 
         private EuropeanaBeanImpl(Class<?> beanClass) {
             this.beanClass = beanClass;
-            if (beanClass.getAnnotation(EuropeanaView.class) == null) {
-                throw new RuntimeException("Bean class must be annotated with @EuropeanaView");
-            }
-        }
-
-        @Override
-        public int rows() {
-            return beanClass.getAnnotation(EuropeanaView.class).rows();
-        }
-
-        @Override
-        public boolean facets() {
-            return beanClass.getAnnotation(EuropeanaView.class).facets();
         }
 
         @Override
@@ -277,6 +276,11 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         @Override
         public String getFacetName() {
             return fieldAnnotation.value();
+        }
+
+        @Override
+        public String getFacetPrefix() {
+            return europeanaAnnotation.facetPrefix();
         }
 
         @Override

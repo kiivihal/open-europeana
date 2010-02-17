@@ -57,18 +57,29 @@ public class DocIdWindowPagerImpl implements DocIdWindowPager {
         }
         int solrStartRow = fullDocUriInt;
         pager.hasPrevious = fullDocUriInt > 1;
-        if (fullDocUriInt > 0) {
+        if (fullDocUriInt > 1) {
+            solrStartRow -= 2;
+        }
+        else {
             solrStartRow -= 1;
         }
         originalBriefSolrQuery.setFields("europeana_uri");
         originalBriefSolrQuery.setStart(solrStartRow);
         originalBriefSolrQuery.setRows(3);
         QueryResponse queryResponse = solrServer.query(originalBriefSolrQuery);
+        if (queryResponse.getResults() == null) {
+            return null; // if no results are found return null to signify that docIdPage can be created.
+        }
         List<IdBean> list = queryResponse.getBeans(IdBean.class);
         final SolrDocumentList response = queryResponse.getResults();
         int offset = (int) response.getStart();
         int numFound = (int) response.getNumFound();
-        pager.hasNext = offset + 1 < numFound;
+        if (offset + 2 < numFound) {
+            pager.hasNext = true;
+        }
+        else if (fullDocUriInt == 1 && list.size() == 2) {
+            pager.hasNext = true;
+        }
         if (fullDocUriInt > numFound || list.size() < 2) {
             pager.hasPrevious = false;
             pager.hasNext = false;
@@ -90,7 +101,7 @@ public class DocIdWindowPagerImpl implements DocIdWindowPager {
         return pager;
     }
 
-    private void setReturnToResults(Map<String, String[]> httpParameters)  {
+    private void setReturnToResults(Map<String, String[]> httpParameters) {
         StringBuilder out = new StringBuilder();
         if (pageId.equalsIgnoreCase("brd")) {
             out.append("brief-doc.html?");

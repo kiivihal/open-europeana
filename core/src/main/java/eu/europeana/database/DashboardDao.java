@@ -21,10 +21,12 @@
 
 package eu.europeana.database;
 
-import eu.europeana.database.domain.*;
+import eu.europeana.database.domain.DashboardLog;
+import eu.europeana.database.domain.EuropeanaCollection;
+import eu.europeana.database.domain.EuropeanaId;
+import eu.europeana.database.domain.IndexingQueueEntry;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * This interface represents the contract for data access that the Dashboard application needs, above and beyond
@@ -53,29 +55,16 @@ public interface DashboardDao {
     List<EuropeanaCollection> fetchCollections(String prefix);
 
     /**
-     * Fetch a single collection on the basis of its name, either expecting it to be there
-     * or creating it in case it's absent, depending on the create argument.
+     * Try to find the collection based on the file name, and if that doesn't work use the
+     * collection name, and change the file name to the new value
      *
-     * @param name the collection is called
-     * @param create false if you expect it to be there, true if creating it would be okay
-     * @return the collection, whether new or existing
+     * @param collectionName the name of the collection
+     * @param collectionFileName the file name, null is allowed. todo: this attribute can be removed when collection names ALWAYS depend on file names
+     * @param createIfAbsent create the collection if it wasn't found
+     * @return a europeana collection, or perhaps null if createIfAbsent is null and it wasn't found
      */
 
-    EuropeanaCollection fetchCollectionByName(String name, boolean create);
-
-    /**
-     * Fetch the collection when you know the big XML file which contains its metadata contents.
-     *
-     * <p>
-     *
-     * todo: since the creation of the sandbox dashboard, there is a potential for multiple
-     * todo: collections having the same file name, which is problematic for this method
-     *
-     * @param fileName which file
-     * @return the collection corresponding to the file name, null if it wasn't found
-     */
-
-    EuropeanaCollection fetchCollectionByFileName(String fileName);
+    EuropeanaCollection fetchCollection(String collectionName, String collectionFileName, boolean createIfAbsent);
 
     /**
      * Fetch the collection based on its internal id.  If it's absent there will be an exception.
@@ -115,7 +104,7 @@ public interface DashboardDao {
      * Prepare a collection for importing by removing any saved import error and setting the date last modified.
      *
      * note: originally the indexing was triggered using the last modified date. is that still the case?
-     * 
+     *
      * @param collectionId the internal identifier
      * @return the updated collection
      */
@@ -133,17 +122,16 @@ public interface DashboardDao {
     EuropeanaCollection setImportError(Long collectionId, String importError);
 
     /**
-     * During importing, this method is used to record a newly-created europeana id entity with its
-     * associated object URLs, or to add the ID to the database if it is an existing europeana id.
+     * During importing, this method is used to record a newly-created europeana id entity,
+     * or to add the ID to the database if it is an existing europeana id.
      * The check for an existing id is done by fetching on the basis of the europeana uri and the
      * collection (calling getEuropeanaId below).
      *
      * @param europeanaId internal identifier
-     * @param objectUrls urls to its object(s)
      * @return the updated collection
      */
 
-    EuropeanaId saveEuropeanaId(EuropeanaId europeanaId, Set<String> objectUrls);
+    EuropeanaId saveEuropeanaId(EuropeanaId europeanaId);
 
     /**
      * Fetch the current version of the existing europeana id.  Search using uri and collection.
@@ -173,27 +161,6 @@ public interface DashboardDao {
     List<EuropeanaId> fetchCollectionObjects(EuropeanaCollection collection);
 
     /**
-     * Remove the europeana object entities which refer to the given object by its url.
-     *
-     * @param objectUrl the url of what is to be removed
-     * @return how many objects were removed
-     */
-
-    int removeOrphanObject(String objectUrl);
-
-    /**
-     * Find and mark the orphan objects associated with the given collection, by checking for objects which have not
-     * been modified since the collection was re-imported, indicating that they were no longer present.
-     *
-     * todo: apparently this method's implementation is in transition, unit tests required
-     *
-     * @param collection use id and last modified value
-     * @return the number of IDs with
-     */
-
-    int markOrphans(EuropeanaCollection collection);
-
-    /**
      * Fetch all the entries out of the current queue, since each one of them contains information
      * about how far the process has come so far.  The indexing updates these entries, so this method
      * just fetches the latest news.
@@ -201,73 +168,7 @@ public interface DashboardDao {
      * @return all entries in the queues for indexing and cacheing
      */
 
-    List<? extends QueueEntry> fetchQueueEntries();
-
-    /**
-     * Get a limited-size list of object that still require cacheing. The last processed record id is stored
-     * in the queue entry, so objects with higher ids than that are found.
-     *
-     * @param maxResults how big can the list be?
-     * @param queueEntry the current state of the cache operation
-     * @return a new list of objects that require cacheing
-     */
-
-    List<EuropeanaObject> getEuropeanaObjectsToCache(int maxResults, CacheingQueueEntry queueEntry);
-
-    /**
-     * Find a list of orphan objects (those for which there is no EuropeanaId).
-     *
-     * @param maxResults how big can the list be?
-     * @return the list of orphans
-     */
-
-    List<EuropeanaObject> getEuropeanaObjectOrphans(int maxResults);
-
-    /**
-     * Create a cache queue entry so that cacheing is initiated for the given collection.  To start things off,
-     * this method sets the maximum number of records to be cached.
-     *
-     * @param collection which collection is to be cached?
-     * @return true if it was done, false if the collection was not found
-     */
-
-    boolean addToCacheQueue(EuropeanaCollection collection);
-
-    /**
-     * Look for work to do on the queue for cacheing.  If there something to do, the queue entry will be returned.
-     *
-     * @return the entry to work on, or null if there was no work
-     */
-
-    CacheingQueueEntry getEntryForCacheing();
-
-    /**
-     * During cacheing, this method is called to keep the database informed as to the current status.
-     *
-     * @param cachedRecords how many objects were cached this time around?
-     * @param queueEntry which job were we working on?
-     * @param lastId the last id of the previous list of things cached
-     * @return the updated queue entry
-     */
-
-    CacheingQueueEntry saveObjectsCached(int cachedRecords, CacheingQueueEntry queueEntry, EuropeanaObject lastId);
-
-    /**
-     * Flag the object to indicate that cacheing was unsuccessful
-     *
-     * @param object which object was not chacheable?
-     */
-
-    void setObjectCachedError(EuropeanaObject object);
-
-    /**
-     * When getEuropeanaObjectsToCache returns nothing, indicating that there is no more work, this method
-     * is called to remove the cache job from the queue.
-     *
-     * @param collection the collection finished with cacheing
-     */
-
-    void removeFromCacheQueue(EuropeanaCollection collection);
+    List<IndexingQueueEntry> fetchQueueEntries();
 
     /**
      * Indicate that the given collection is to be indexed

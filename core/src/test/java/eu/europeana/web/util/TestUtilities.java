@@ -71,7 +71,7 @@ public class TestUtilities {
 
     @Test
     public void smallPagination() throws Exception {
-        String page = makePage(30, 20, 1);
+        String page = makePage(30, 20, 0);
         assertEquals(
                 "1\n" +
                         "2(21)\n" +
@@ -82,7 +82,7 @@ public class TestUtilities {
 
     @Test
     public void startPagination() throws Exception {
-        String page = makePage(300, 20, 1);
+        String page = makePage(300, 20, 0);
         assertEquals(
                 "1\n" +
                         "2(21)\n" +
@@ -101,7 +101,7 @@ public class TestUtilities {
 
     @Test
     public void middlePagination() throws Exception {
-        String page = makePage(300, 20, 141);
+        String page = makePage(300, 20, 140);
         assertEquals(
                 "prev(121)\n" +
                         "3(41)\n" +
@@ -121,7 +121,7 @@ public class TestUtilities {
 
     @Test
     public void nearEndPagination() throws Exception {
-        String page = makePage(300, 20, 261);
+        String page = makePage(300, 20, 260);
         assertEquals(
                 "prev(241)\n" +
                         "6(101)\n" +
@@ -142,7 +142,7 @@ public class TestUtilities {
 
     @Test
     public void endPagination() throws Exception {
-        String page = makePage(300, 20, 281);
+        String page = makePage(300, 20, 280);
         assertEquals(
                 "prev(261)\n" +
                         "6(101)\n" +
@@ -161,6 +161,7 @@ public class TestUtilities {
 
     private String makePage(int numFound, int rows, int start) throws Exception {
         SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("");
         solrQuery.setStart(start);
         solrQuery.setRows(rows);
         return makePage(new ResultPaginationImpl(solrQuery, numFound, "queryString??"));

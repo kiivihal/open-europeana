@@ -21,13 +21,28 @@
 
 package eu.europeana.dashboard.server;
 
-import eu.europeana.cache.DigitalObjectCache;
 import eu.europeana.dashboard.client.DashboardService;
-import eu.europeana.dashboard.client.dto.*;
+import eu.europeana.dashboard.client.dto.CarouselItemX;
+import eu.europeana.dashboard.client.dto.CollectionStateX;
+import eu.europeana.dashboard.client.dto.DashboardLogX;
+import eu.europeana.dashboard.client.dto.EuropeanaCollectionX;
+import eu.europeana.dashboard.client.dto.ImportFileX;
+import eu.europeana.dashboard.client.dto.LanguageX;
+import eu.europeana.dashboard.client.dto.QueueEntryX;
+import eu.europeana.dashboard.client.dto.SavedItemX;
+import eu.europeana.dashboard.client.dto.SavedSearchX;
+import eu.europeana.dashboard.client.dto.UserX;
 import eu.europeana.database.DashboardDao;
 import eu.europeana.database.StaticInfoDao;
 import eu.europeana.database.UserDao;
-import eu.europeana.database.domain.*;
+import eu.europeana.database.domain.CarouselItem;
+import eu.europeana.database.domain.DashboardLog;
+import eu.europeana.database.domain.EuropeanaCollection;
+import eu.europeana.database.domain.IndexingQueueEntry;
+import eu.europeana.database.domain.Language;
+import eu.europeana.database.domain.SavedItem;
+import eu.europeana.database.domain.SavedSearch;
+import eu.europeana.database.domain.User;
 import eu.europeana.incoming.ESEImporter;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServer;
@@ -47,7 +62,6 @@ public class DashboardServiceImpl implements DashboardService {
     private ESEImporter normalizedImporter;
     private ESEImporter sandboxImporter;
     private DashboardDao dashboardDao;
-    private DigitalObjectCache digitalObjectCache;
     private StaticInfoDao staticInfoDao;
     private UserDao userDao;
     private SolrServer solrServer;
@@ -78,10 +92,6 @@ public class DashboardServiceImpl implements DashboardService {
 
     public void setSolrServer(SolrServer solrServer) {
         this.solrServer = solrServer;
-    }
-
-    public void setDigitalObjectCache(DigitalObjectCache digitalObjectCache) {
-        this.digitalObjectCache = digitalObjectCache;
     }
 
     public UserX login(String email, String password) {
@@ -120,8 +130,8 @@ public class DashboardServiceImpl implements DashboardService {
         return collections;
     }
 
-    public EuropeanaCollectionX fetchCollection(String name, boolean create) {
-        EuropeanaCollection collection = dashboardDao.fetchCollectionByName(name, create);
+    public EuropeanaCollectionX fetchCollection(String collectionName, String fileName, boolean create) {
+        EuropeanaCollection collection = dashboardDao.fetchCollection(collectionName, fileName, create);
         if (collection == null) {
             return null;
         }
@@ -146,12 +156,11 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     public List<QueueEntryX> fetchQueueEntries() {
-        List<? extends QueueEntry> fetchedEntries = dashboardDao.fetchQueueEntries();
+        List<IndexingQueueEntry> fetchedEntries = dashboardDao.fetchQueueEntries();
         List<QueueEntryX> entries = new ArrayList<QueueEntryX>();
-        for (QueueEntry entry : fetchedEntries) {
+        for (IndexingQueueEntry entry : fetchedEntries) {
             entries.add(new QueueEntryX(
                     entry.getId(),
-                    entry.isCache() ? QueueEntryX.Type.CACHE : QueueEntryX.Type.INDEX,
                     DataTransfer.convert(entry.getCollection()),
                     entry.getRecordsProcessed(),
                     entry.getTotalRecords()
@@ -268,37 +277,6 @@ public class DashboardServiceImpl implements DashboardService {
     public boolean removeSearchTerm(String language, String term) {
         audit("remove search term: " + language + "/" + term);
         return staticInfoDao.removeSearchTerm(Language.findByCode(language), term);
-    }
-
-    public List<String> getObjectOrphans() {
-        List<EuropeanaObject> orphans = dashboardDao.getEuropeanaObjectOrphans(50);
-        List<String> uris = new ArrayList<String>();
-        for (EuropeanaObject object : orphans) {
-            uris.add(object.getObjectUrl());
-        }
-        return uris;
-    }
-
-    public boolean deleteObjectOrphan(String uri) {
-        audit("delete object orphan: " + uri);
-        dashboardDao.removeOrphanObject(uri);
-        return digitalObjectCache.remove(uri);
-    }
-
-    public void deleteAllOrphans() {
-        while (true) {
-            List<EuropeanaObject> orphans = dashboardDao.getEuropeanaObjectOrphans(1000);
-            if (orphans.isEmpty()) {
-                break;
-            }
-            for (EuropeanaObject orphan : orphans) {
-                deleteObjectOrphan(orphan.getObjectUrl());
-            }
-        }
-    }
-
-    public EuropeanaIdX fetchEuropeanaId(String uri) {
-        return DataTransfer.convert(dashboardDao.fetchEuropeanaId(uri));
     }
 
     public void disableAllCollections() {

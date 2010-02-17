@@ -121,7 +121,7 @@ public class BeanQueryModelFactory implements QueryModelFactory {
                 solrQuery.addFilterQuery(filterQuery);
             }
         }
-        solrQuery.setFilterQueries(ControllerUtil.getFilterQueriesAsPhrases(solrQuery)); // todo: integrate into the above loop
+        solrQuery.setFilterQueries(ControllerUtil.getFilterQueriesAsPhrases(solrQuery));
         return solrQuery;
     }
 
@@ -264,6 +264,7 @@ public class BeanQueryModelFactory implements QueryModelFactory {
         private List<? extends BriefDoc> briefDocs;
         private List<FacetQueryLinks> queryLinks;
         private Map<String, String> facetLogs;
+        private BriefDoc matchDoc;
 
         @SuppressWarnings("unchecked")
         private BriefBeanViewImpl(SolrQuery solrQuery, QueryResponse solrResponse, String requestQueryString) throws UnsupportedEncodingException {
@@ -271,6 +272,19 @@ public class BeanQueryModelFactory implements QueryModelFactory {
             briefDocs = addIndexToBriefDocList(solrQuery, (List<? extends BriefDoc>) solrResponse.getBeans(briefBean));
             queryLinks = FacetQueryLinks.createDecoratedFacets(solrQuery, solrResponse.getFacetFields());
             facetLogs = createFacetLogs(solrResponse);
+            matchDoc = createMatchDoc(solrResponse);
+        }
+
+        private BriefDoc createMatchDoc(QueryResponse solrResponse) {
+            BriefDoc briefDoc = null;
+            SolrDocumentList matchDoc = (SolrDocumentList) solrResponse.getResponse().get("match");
+            if (matchDoc != null) {
+                List<BriefBean> briefBeanList = solrServer.getBinder().getBeans(BriefBean.class, matchDoc);
+                if (briefBeanList.size() > 0) {
+                    briefDoc = briefBeanList.get(0);
+                }
+            }
+            return briefDoc;
         }
 
         private Map<String, String> createFacetLogs(QueryResponse solrResponse) {
@@ -315,6 +329,11 @@ public class BeanQueryModelFactory implements QueryModelFactory {
         @Override
         public Map<String, String> getFacetLogs() {
             return facetLogs;
+        }
+
+        @Override
+        public BriefDoc getMatchDoc() {
+            return matchDoc;
         }
     }
 
@@ -371,7 +390,12 @@ public class BeanQueryModelFactory implements QueryModelFactory {
 
             // if the record is not found give usefull error message
             if (fullBean.size() == 0) {
-                EuropeanaId id = dashboardDao.fetchEuropeanaId(params.get("uri")[0]);
+                EuropeanaId id = null;
+                try {
+                    id = dashboardDao.fetchEuropeanaId(params.get("uri")[0]);
+                } catch (Exception e) {
+                    throw new EuropeanaQueryException(QueryProblem.RECORD_NOT_FOUND.toString());
+                }
                 if (id != null && id.isOrphan()) {
                     throw new EuropeanaQueryException(QueryProblem.RECORD_REVOKED.toString());
                 }
@@ -420,6 +444,7 @@ public class BeanQueryModelFactory implements QueryModelFactory {
     @Override
     public QueryResponse getSolrResponse(SolrQuery solrQuery, Class<?> beanClass) throws EuropeanaQueryException { // add bean to ???
         // set facets
+        SolrQuery dCopy;
         if (beanClass == briefBean) {
             solrQuery.setFacet(true);
             solrQuery.setFacetMinCount(1);
@@ -432,9 +457,26 @@ public class BeanQueryModelFactory implements QueryModelFactory {
                 solrQuery.setQueryType(queryAnalyzer.findSolrQueryType(solrQuery.getQuery()).toString());
             }
         }
-        if (beanClass == fullBean) {
+        dCopy = copySolrQuery(solrQuery);
+        return getSolrResponse(dCopy);
+    }
+
+    private SolrQuery copySolrQuery(SolrQuery solrQuery) {
+        SolrQuery dCopy = new SolrQuery();
+        dCopy.setQuery(solrQuery.getQuery());
+        dCopy.setStart(solrQuery.getStart());
+        dCopy.setQueryType(solrQuery.getQueryType());
+        dCopy.setRows(solrQuery.getRows());
+        //todo do you need to add any more copies
+        if (solrQuery.getFacetFields() != null) {
+            dCopy.setFacet(true);
+            dCopy.setFacetMinCount(solrQuery.getFacetMinCount());
+            dCopy.setFacetLimit(solrQuery.getFacetLimit());
+            dCopy.addFacetField(solrQuery.getFacetFields());
+            dCopy.setFields(solrQuery.getFields());
         }
-        return getSolrResponse(solrQuery);
+        dCopy.setFilterQueries(ControllerUtil.getFilterQueriesAsOrQueries(solrQuery, annotationProcessor.getFacetMap()));
+        return dCopy;
     }
 
     private ResultPagination createPagination(QueryResponse response, SolrQuery query, String requestQueryString) {

@@ -22,7 +22,13 @@
 package eu.europeana.database.dao;
 
 import eu.europeana.database.DashboardDao;
-import eu.europeana.database.domain.*;
+import eu.europeana.database.domain.CarouselItem;
+import eu.europeana.database.domain.CollectionState;
+import eu.europeana.database.domain.DashboardLog;
+import eu.europeana.database.domain.EuropeanaCollection;
+import eu.europeana.database.domain.EuropeanaId;
+import eu.europeana.database.domain.ImportFileState;
+import eu.europeana.database.domain.IndexingQueueEntry;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +36,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 /**
  * This class is an implementation of the DashboardDao using an injected JPA Entity Manager.
@@ -40,7 +50,6 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class DashboardDaoImpl implements DashboardDao {
-    private static final long CACHE_RESTART_MILLIS = 60000L;
     private Logger log = Logger.getLogger(getClass());
 
     @PersistenceContext
@@ -113,38 +122,37 @@ public class DashboardDaoImpl implements DashboardDao {
     }
 
     @Transactional
-    public EuropeanaCollection fetchCollectionByName(String name, boolean create) {
-        Query query = entityManager.createQuery("select col from EuropeanaCollection as col where col.name = :name");
-        query.setParameter("name", name);
-        List<EuropeanaCollection> collections = query.getResultList();
-        EuropeanaCollection collection;
-        if (collections.isEmpty()) {
-            if (!create) {
-                return null;
+    public EuropeanaCollection fetchCollection(String collectionName, String collectionFileName, boolean createIfAbsent) {
+        Query query;
+        List<EuropeanaCollection> collections;
+        if (collectionFileName != null) {
+            query = entityManager.createQuery("select col from EuropeanaCollection as col where col.fileName = :collectionFileName");
+            query.setParameter("collectionFileName", collectionFileName);
+            collections = query.getResultList();
+            if (collections.size() == 1) {
+                return collections.get(0);
             }
-            log.info("collection not found, creating: " + name);
-            collection = new EuropeanaCollection();
-            collection.setName(name.replaceFirst(".xml", ""));
-            collection.setFileName(name);
+        }
+        query = entityManager.createQuery("select col from EuropeanaCollection as col where col.name = :collectionName");
+        query.setParameter("collectionName", collectionName);
+        collections = query.getResultList();
+        if (collections.size() == 1) {
+            collections.get(0).setFileName(collectionFileName);
+            return collections.get(0);
+        }
+        else if (createIfAbsent) {
+            log.info("collection not found, creating: " + collectionName);
+            EuropeanaCollection collection = new EuropeanaCollection();
+            collection.setName(collectionName);
+            collection.setFileName(collectionFileName);
             collection.setFileState(ImportFileState.UPLOADING);
             collection.setCollectionLastModified(new Date());
             entityManager.persist(collection);
+            return collection;
         }
         else {
-            collection = collections.get(0);
-        }
-        return collection;
-    }
-
-    @Transactional
-    public EuropeanaCollection fetchCollectionByFileName(String fileName) {
-        Query query = entityManager.createQuery("select col from EuropeanaCollection as col where col.fileName = :fileName");
-        query.setParameter("fileName", fileName);
-        List<EuropeanaCollection> collections = query.getResultList();
-        if (collections.size() != 1) { // todo: potentially dangerous because file names need not be unique!
             return null;
         }
-        return collections.get(0);
     }
 
     @Transactional
@@ -156,17 +164,8 @@ public class DashboardDaoImpl implements DashboardDao {
     public EuropeanaCollection updateCollection(EuropeanaCollection collection) {
         if (collection.getId() != null) {
             EuropeanaCollection existing = entityManager.find(EuropeanaCollection.class, collection.getId());
-            if (collection.getCacheState() != existing.getCacheState()) {
-                switch (collection.getCacheState()) {
-                    case EMPTY:
-                    case CACHED:
-                    case UNCACHED:
-                        removeFromCacheQueue(collection);
-                        break;
-                    case QUEUED:
-                        addToCacheQueue(collection);
-                        break;
-                }
+            if (existing == null) {
+                throw new RuntimeException("cannot find existing collection");
             }
             if (collection.getCollectionState() != existing.getCollectionState()) {
                 switch (collection.getCollectionState()) {
@@ -219,8 +218,8 @@ public class DashboardDaoImpl implements DashboardDao {
 
         // remove all items from the IndexingQueue
         Query indexQueueQuery = entityManager.createQuery("select qi from IndexingQueueEntry as qi");
-        List<QueueEntry> indexingResultList = indexQueueQuery.getResultList();
-        for (QueueEntry queueEntry : indexingResultList) {
+        List<IndexingQueueEntry> indexingResultList = indexQueueQuery.getResultList();
+        for (IndexingQueueEntry queueEntry : indexingResultList) {
             enabledCollections.add(queueEntry.getCollection());
             entityManager.remove(queueEntry);
         }
@@ -254,7 +253,7 @@ public class DashboardDaoImpl implements DashboardDao {
     }
 
     @Transactional()
-    public EuropeanaId saveEuropeanaId(EuropeanaId detachedId, Set<String> objectUrls) {
+    public EuropeanaId saveEuropeanaId(EuropeanaId detachedId) {
         EuropeanaId persistentId = getEuropeanaId(detachedId);
         Date now = new Date();
         if (persistentId == null) {
@@ -262,11 +261,6 @@ public class DashboardDaoImpl implements DashboardDao {
             detachedId.setLastModified(now);
             detachedId.setCreated(now);
             entityManager.persist(detachedId);
-            if (objectUrls.size() > 0) {
-                for (String objectUrl : objectUrls) {
-                    detachedId.getEuropeanaObjects().add(new EuropeanaObject(detachedId, objectUrl));
-                }
-            }
             persistentId = detachedId;
         }
         else {
@@ -274,26 +268,6 @@ public class DashboardDaoImpl implements DashboardDao {
             persistentId.setLastModified(now);
             persistentId.getSocialTags().size();
             persistentId.setOrphan(false);
-            if (objectUrls.size() > 0) { // fix to speed up reimporting of collections without objects
-                log.debug("checking for objectUrls");
-                for (String objectUrl : objectUrls) { // if one is not there, add it
-                    EuropeanaObject found = persistentId.getEuropeanaObject(objectUrl);
-                    if (found == null) {
-                        EuropeanaObject object = new EuropeanaObject(persistentId, objectUrl);
-                        entityManager.persist(object);
-                        persistentId.getEuropeanaObjects().add(object);
-                    }
-                }
-                Iterator<EuropeanaObject> objectWalk = persistentId.getEuropeanaObjects().iterator();
-                while (objectWalk.hasNext()) { // if it is no longer there, disconnect it
-                    EuropeanaObject object = objectWalk.next();
-                    if (!objectUrls.contains(object.getObjectUrl())) {
-                        objectWalk.remove();
-                        object.setEuropeanaId(null); // just disconnect
-                        entityManager.merge(object);
-                    }
-                }
-            }
         }
         return persistentId;
     }
@@ -315,119 +289,10 @@ public class DashboardDaoImpl implements DashboardDao {
 
     @Override
     @Transactional(readOnly = true)
-	public List<EuropeanaId> fetchCollectionObjects(EuropeanaCollection collection) {
+    public List<EuropeanaId> fetchCollectionObjects(EuropeanaCollection collection) {
         Query query = entityManager.createQuery("select id from EuropeanaId as id where id.collection = :collection");
         query.setParameter("collection", collection);
         return (List<EuropeanaId>) query.getResultList();
-	}
-
-	@Transactional
-    public CacheingQueueEntry getEntryForCacheing() {
-        Query query = entityManager.createQuery("select entry from CacheingQueueEntry as entry where entry.updated is null or entry.updated < :tooOld");
-        Date tooOld = new Date(System.currentTimeMillis() - CACHE_RESTART_MILLIS);
-        query.setParameter("tooOld", tooOld);
-        List<CacheingQueueEntry> result = (List<CacheingQueueEntry>) query.getResultList();
-        if (result.isEmpty()) {
-            return null;
-        }
-        else {
-            result.get(0).setUpdated(new Date());
-            return result.get(0);
-        }
-    }
-
-    @Transactional
-    public CacheingQueueEntry saveObjectsCached(int cachedRecords, CacheingQueueEntry queueEntry, EuropeanaObject lastId) {
-        CacheingQueueEntry entry = entityManager.find(CacheingQueueEntry.class, queueEntry.getId());
-        if (entry == null) {
-            return null;
-        }
-        Integer recordsCached = queueEntry.getRecordsProcessed() + cachedRecords;
-        entry.setRecordsProcessed(recordsCached);
-        entry.setLastProcessedRecordId(lastId.getId());
-        entry.setUpdated(new Date());
-        log.info(MessageFormat.format("updated CachingQueue for queueEntry: {0} ({1}/{2})", queueEntry.getCollection().getName(), recordsCached, queueEntry.getTotalRecords()));
-        return entry;
-    }
-
-    @Transactional
-    public List<EuropeanaObject> getEuropeanaObjectsToCache(int maxResults, CacheingQueueEntry queueEntry) {
-        Long lastId = queueEntry.getLastProcessedRecordId();
-        Query query;
-        if (lastId != null) {
-            query = entityManager.createQuery("select id from EuropeanaObject as id where id.id > :lastId and id.europeanaId.collection = :collection order by id.id asc");
-            query.setParameter("lastId", lastId);
-        }
-        else {
-            query = entityManager.createQuery("select id from EuropeanaObject as id where id.europeanaId.collection = :collection order by id.id asc");
-        }
-        query.setParameter("collection", queueEntry.getCollection());
-        query.setMaxResults(maxResults);
-        return (List<EuropeanaObject>) query.getResultList();
-    }
-
-    @Transactional
-    public List<EuropeanaObject> getEuropeanaObjectOrphans(int maxResults) {
-        Query query = entityManager.createQuery(
-                "select obj from EuropeanaObject as obj " +
-                        "where obj.europeanaId is null order by obj.date asc"
-        );
-        query.setMaxResults(maxResults);
-        return (List<EuropeanaObject>) query.getResultList();
-    }
-
-    @Transactional
-    public void setObjectCachedError(EuropeanaObject detachedObject) {
-        EuropeanaObject object = entityManager.find(EuropeanaObject.class, detachedObject.getId());
-        object.setError(true);
-    }
-
-    @Transactional
-    public int removeOrphanObject(String objectUrl) {
-        Query query = entityManager.createQuery(
-                "select obj from EuropeanaObject as obj " +
-                        "where obj.europeanaId is null and obj.objectUrl = :objectUrl"
-        );
-        query.setParameter("objectUrl", objectUrl);
-        List<EuropeanaObject> objects = (List<EuropeanaObject>) query.getResultList();
-        for (EuropeanaObject object : objects) {
-            entityManager.remove(object);
-        }
-        return objects.size();
-    }
-
-    @Transactional
-    public boolean addToCacheQueue(EuropeanaCollection collection) {  // todo: only used by this dao itself, so could be private or inlined
-        Query query = entityManager.createQuery("select count(eo) from EuropeanaObject eo where eo.europeanaId.collection = :collection");
-        query.setParameter("collection", collection);
-        List resultList = query.getResultList();
-        if (resultList.isEmpty()) {
-            log.info("Collection is unknown.");
-            return false;
-        }
-        Long totalNumberOfRecords = (Long) resultList.get(0);
-        // create a new CacheQueueEntry
-        CacheingQueueEntry queueEntry = new CacheingQueueEntry(collection);
-        queueEntry.setTotalRecords(totalNumberOfRecords.intValue());
-        queueEntry.setRecordsProcessed(0);
-        entityManager.persist(queueEntry);
-        return true;
-    }
-
-    @Transactional
-    public void removeFromCacheQueue(EuropeanaCollection collection) { // todo: only used by this dao itself, so could be private or inlined
-        // remove collection to cache Queue
-        Query query = entityManager.createQuery("select entry from CacheingQueueEntry as entry where entry.collection = :collection");
-        query.setParameter("collection", collection);
-        List<CacheingQueueEntry> resultList = (List<CacheingQueueEntry>) query.getResultList();
-        if (resultList.isEmpty()) {
-            log.info("collection not found on cacheQueue. ");
-        }
-        else {
-            for (CacheingQueueEntry queueEntry : resultList) {
-                entityManager.remove(queueEntry);
-            }
-        }
     }
 
     @Transactional
@@ -440,7 +305,6 @@ public class DashboardDaoImpl implements DashboardDao {
             return false;
         }
         Long totalNumberOfRecords = (Long) resultList.get(0);
-        // create a new QueueEntry
         IndexingQueueEntry queueEntry = new IndexingQueueEntry(collection);
         queueEntry.setTotalRecords(totalNumberOfRecords.intValue());
         queueEntry.setCreated(new Date());
@@ -466,6 +330,7 @@ public class DashboardDaoImpl implements DashboardDao {
     }
 
     // todo: this function has not been fully tested yet
+
     @Transactional
     public IndexingQueueEntry getEntryForIndexing() {
         Query query = entityManager.createQuery("select entry from IndexingQueueEntry as entry where entry.collection.collectionState <> :collectionState");
@@ -518,14 +383,11 @@ public class DashboardDaoImpl implements DashboardDao {
     }
 
     @Transactional
-    public List<? extends QueueEntry> fetchQueueEntries() {
+    public List<IndexingQueueEntry> fetchQueueEntries() {
         Query indexQuery = entityManager.createQuery("select entry from IndexingQueueEntry as entry");
-        Query cacheQuery = entityManager.createQuery("select entry from CacheingQueueEntry as entry");
-        List<QueueEntry> entries = new ArrayList<QueueEntry>();
+        List<IndexingQueueEntry> entries = new ArrayList<IndexingQueueEntry>();
         List<IndexingQueueEntry> indexResult = indexQuery.getResultList();
-        List<CacheingQueueEntry> cacheResult = cacheQuery.getResultList();
         entries.addAll(indexResult);
-        entries.addAll(cacheResult);
         return entries;
     }
 
@@ -534,16 +396,11 @@ public class DashboardDaoImpl implements DashboardDao {
         EuropeanaCollection collection = entityManager.find(EuropeanaCollection.class, collectionId);
         markOrphans(collection);
         Query recordCountQuery = entityManager.createQuery("select count(id) from EuropeanaId as id where id.collection = :collection and orphan = false");
-        Query cacheCountQuery = entityManager.createQuery("select count(eo) from EuropeanaObject as eo where eo.europeanaId.collection = :collection");
         Query orphanCountQuery = entityManager.createQuery("select count(id) from EuropeanaId as id where id.collection = :collection and orphan = true");
         // update recordCount
         recordCountQuery.setParameter("collection", collection);
         Long totalNumberOfRecords = (Long) recordCountQuery.getResultList().get(0);
         collection.setTotalRecords(totalNumberOfRecords.intValue());
-        // update cacheCount
-        cacheCountQuery.setParameter("collection", collection);
-        Long totalNumberOfObjects = (Long) cacheCountQuery.getResultList().get(0);
-        collection.setTotalObjects(totalNumberOfObjects.intValue());
         // update orphan count
         orphanCountQuery.setParameter("collection", collection);
         Long totalNumberOfOrphans = (Long) orphanCountQuery.getResultList().get(0);
@@ -551,8 +408,18 @@ public class DashboardDaoImpl implements DashboardDao {
         return collection;
     }
 
+    /**
+     * Find and mark the orphan objects associated with the given collection, by checking for europeanaIds which have not
+     * been modified since the collection was re-imported, indicating that they were no longer present.
+     * <p/>
+     * todo: apparently this method's implementation is in transition, unit tests required
+     *
+     * @param collection use id and last modified value
+     * @return the number of IDs with
+     */
+
     @Transactional
-    public int markOrphans(EuropeanaCollection collection) {
+    private int markOrphans(EuropeanaCollection collection) {
         int numberUpdated;
         Query orphanQountUpdate = entityManager.createQuery("update EuropeanaId id set orphan = :orphan where collection = :collection and lastModified < :lastmodified");
         orphanQountUpdate.setParameter("collection", collection);

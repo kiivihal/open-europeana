@@ -59,7 +59,7 @@ public class Breadcrumb {
                     String facetValue = facetTerm.substring(colon + 1);
                     appendToURI(out, facetName, facetValue);
                     if (count-- == 0) {
-                        breadcrumbs.add(new Breadcrumb(out.toString(), facetName + ":" + encode(facetValue)));
+                        breadcrumbs.add(new Breadcrumb(out.toString(), facetName + ":" + facetValue));
                         break;
                     }
                 }
@@ -75,6 +75,9 @@ public class Breadcrumb {
     }
 
     private static String encode(String value) {
+        if (value == null) {
+            throw new RuntimeException("Cannot encode null value!");
+        }
         try {
             return URLEncoder.encode(value, "utf-8");
         }

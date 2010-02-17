@@ -63,10 +63,6 @@ public class EuropeanaCollection implements Serializable {
 
     @Column(length = 25)
     @Enumerated(EnumType.STRING)
-    private CacheState cacheState = CacheState.EMPTY;
-
-    @Column(length = 25)
-    @Enumerated(EnumType.STRING)
     private CollectionState collectionState = CollectionState.EMPTY;
 
     @Column
@@ -138,14 +134,6 @@ public class EuropeanaCollection implements Serializable {
 
     public void setFileState(ImportFileState fileState) {
         this.fileState = fileState;
-    }
-
-    public CacheState getCacheState() {
-        return cacheState;
-    }
-
-    public void setCacheState(CacheState cacheState) {
-        this.cacheState = cacheState;
     }
 
     public CollectionState getCollectionState() {
