@@ -21,6 +21,7 @@
 
 package eu.europeana;
 
+import eu.europeana.bootstrap.StarterUtil;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.webapp.WebAppContext;
 
@@ -29,26 +30,17 @@ import org.mortbay.jetty.webapp.WebAppContext;
  *
  * @author Christian Sadilek
  */
-public class AnnotationPortalLiteStarter {
+public class PortalLiteWithAnnotation {
 
 	// do not forget to set -Deuropeana.properties and working directory -> see readme file
     public static void main(String... args) throws Exception {
-    	System.setProperty("solr.solr.home", "./core/src/test/solr/home");
     	System.setProperty("hibernate.bytecode.provider", "javassist");
+        String aitRoot = StarterUtil.getAITPath();
+        Server server = new Server(8080);
+        server.addHandler(new WebAppContext(StarterUtil.getEuropeanaPath() + "/portal-lite/src/main/webapp", "/portal"));
+        server.addHandler(new WebAppContext(aitRoot + "/annotation-middleware/target/annotation-middleware.war", "/annotation-middleware"));
+        server.addHandler(new WebAppContext(aitRoot + "/image-annotation-frontend/target/image-annotation-frontend.war", "/image-annotation-frontend"));
+        server.start();
 
-    	int backendPort = 8983;
-    	int frontendPort = 8080;
-
-    	Server serverBackEnd = new Server(backendPort);
-    	serverBackEnd.addHandler(new WebAppContext("api/src/main/webapp", "/api"));
-    	serverBackEnd.addHandler(new WebAppContext("core/src/test/solr/solr.war", "/solr"));
-    	serverBackEnd.start();
-
-    	Server serverFrontEnd = new Server(frontendPort);
-    	serverFrontEnd.addHandler(new WebAppContext("portal-lite/src/main/webapp", "/portal"));
-        // TODO fix the paths
-    	serverFrontEnd.addHandler(new WebAppContext("../annotation-middleware/target/annotation-middleware", "/annotation-middleware"));
-    	serverFrontEnd.addHandler(new WebAppContext("../image-annotation-frontend/target/image-annotation-frontend", "/image-annotation-frontend"));
-    	serverFrontEnd.start();
     }
 }

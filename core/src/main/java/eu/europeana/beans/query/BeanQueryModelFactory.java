@@ -99,18 +99,26 @@ public class BeanQueryModelFactory implements QueryModelFactory {
             }
         }
         else {
-            throw new EuropeanaQueryException(QueryProblem.MALFORMED_URL.toString());
+            throw new EuropeanaQueryException(QueryProblem.MALFORMED_QUERY.toString());
         }
-
+        if (solrQuery.getQuery().trim().length() == 0) { // throw exception when no query is specified
+            throw new EuropeanaQueryException(QueryProblem.MALFORMED_QUERY.toString());
+        }
         if (params.containsKey("start")) {
-            solrQuery.setStart(Integer.valueOf(params.get("start")[0]));
+            try {
+                Integer start = Integer.valueOf(params.get("start")[0]);
+                solrQuery.setStart(start);
+            } catch (NumberFormatException e) {
+                // if number exception is thrown take default setting 0 (hardening parameter handling)
+            }
         }
-        else {
-            solrQuery.setStart(0);
-        }
-
         if (params.containsKey("rows")) {
-            solrQuery.setRows(Integer.valueOf(params.get("rows")[0]));
+            try {
+                Integer rows = Integer.valueOf(params.get("rows")[0]);
+                solrQuery.setRows(rows);
+            } catch (NumberFormatException e) {
+                // number exception is thrown take default setting 12 (hardening parameter handling)
+            }
         }
         solrQuery.setQueryType(queryAnalyzer.findSolrQueryType(solrQuery.getQuery()).toString());
 
@@ -412,12 +420,16 @@ public class BeanQueryModelFactory implements QueryModelFactory {
 
     @Override
     public QueryResponse getSolrResponse(SolrQuery solrQuery) throws EuropeanaQueryException {
-//        if (solrQuery.getStart() < 1) {
-//            solrQuery.setStart(0);
-//            log.warn("Solr Start cannot be negative");
-//        }
+        return getSolrResponse(solrQuery, true);
+    }
+
+    private QueryResponse getSolrResponse(SolrQuery solrQuery, boolean decrementStart) throws EuropeanaQueryException {
+        if (solrQuery.getStart() != null && solrQuery.getStart() < 1) {
+            solrQuery.setStart(0);
+            log.warn("Solr Start cannot be negative");
+        }
         // solr query is 0 based
-        if (solrQuery.getStart() != null && solrQuery.getStart() > 0) {
+        if (decrementStart && solrQuery.getStart() != null && solrQuery.getStart() > 0) {
             solrQuery.setStart(solrQuery.getStart() - 1);
         }
         QueryResponse queryResponse;
@@ -443,6 +455,10 @@ public class BeanQueryModelFactory implements QueryModelFactory {
 
     @Override
     public QueryResponse getSolrResponse(SolrQuery solrQuery, Class<?> beanClass) throws EuropeanaQueryException { // add bean to ???
+        // since we make a defensive copy before the start is decremented we must do it here
+        if (solrQuery.getStart() != null && solrQuery.getStart() > 0) {
+            solrQuery.setStart(solrQuery.getStart() - 1);
+        }
         // set facets
         SolrQuery dCopy;
         if (beanClass == briefBean) {
@@ -458,7 +474,7 @@ public class BeanQueryModelFactory implements QueryModelFactory {
             }
         }
         dCopy = copySolrQuery(solrQuery);
-        return getSolrResponse(dCopy);
+        return getSolrResponse(dCopy, false);
     }
 
     private SolrQuery copySolrQuery(SolrQuery solrQuery) {

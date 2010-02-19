@@ -5,6 +5,11 @@ import eu.europeana.query.EuropeanaQueryException;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 
+/**
+ * @author Nicola Aloia <nicola.aloia@isti.cnr.it>
+ * @author Cesare Corcordia <cesare.concordia@isti.cnr.it>
+ */
+
 public interface TokenDao extends PersistentTokenRepository {
 
     public Token createNewToken(String email);

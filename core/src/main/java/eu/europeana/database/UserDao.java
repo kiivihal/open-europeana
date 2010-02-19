@@ -25,7 +25,6 @@ import eu.europeana.database.domain.SavedItem;
 import eu.europeana.database.domain.SavedSearch;
 import eu.europeana.database.domain.SocialTag;
 import eu.europeana.database.domain.User;
-import eu.europeana.database.integration.TagCount;
 
 import java.util.List;
 
@@ -34,6 +33,7 @@ import java.util.List;
  * searches, items, tags.
  *
  * @author Gerald de Jong <geralddejong@gmail.com>
+ * @author Nicola Aloia <nicola.aloia@isti.cnr.it>
  */
 
 public interface UserDao {
@@ -42,7 +42,7 @@ public interface UserDao {
      * A user logs in to the system using this method, and returns null if there is no match
      * between email and password.
      *
-     * @param email address
+     * @param email    address
      * @param password unhashed
      * @return the user if authenticated, otherwise null
      */
@@ -96,7 +96,7 @@ public interface UserDao {
 
     /**
      * Change the fields of this user using the new values in the object passed in.
-     * <p>
+     * <p/>
      * Note that special care is taken of the password.  If it is empty, the existing hashed password
      * is used but if a value is present in this field, it is hashed and persisted, becoming the new password.
      *
@@ -109,7 +109,7 @@ public interface UserDao {
     /**
      * Add a social tag for the given user
      *
-     * @param user the user getting the social tag
+     * @param user      the user getting the social tag
      * @param socialTag the social tag being added
      * @return the user with its new social tag
      */
@@ -138,8 +138,8 @@ public interface UserDao {
      * Add a saved item to the given user.  Ths saved item needs to be linked to a particular EuropeanaID so
      * the URI of that is passed in.
      *
-     * @param user who is getting this added?
-     * @param savedItem the thing to add
+     * @param user         who is getting this added?
+     * @param savedItem    the thing to add
      * @param europeanaUri identify the EuropeanaId to which the saved item refers
      * @return the user with the item added
      */
@@ -176,7 +176,7 @@ public interface UserDao {
     /**
      * Add a saved search to a user
      *
-     * @param user who to add to?
+     * @param user        who to add to?
      * @param savedSearch what to add
      * @return the user with the saved search added
      */
@@ -194,6 +194,7 @@ public interface UserDao {
 
     /**
      * Fetch a particular saved search by its id
+     *
      * @param savedSearchId internal id
      * @return the object
      */
@@ -208,5 +209,32 @@ public interface UserDao {
      */
 
     User removeSavedSearch(Long savedSearchId);
+
+
+    public class TagCount implements Comparable<TagCount> {
+        private String tag;
+        private Long count;
+
+        public TagCount(String tag, Long count) {
+            this.tag = tag;
+            this.count = count;
+        }
+
+        public Long getCount() {
+            return count;
+        }
+
+        public String getTag() {
+            return tag;
+        }
+
+        public String toString() {
+            return "'" + tag + "' (" + count + ")";
+        }
+
+        public int compareTo(TagCount o) {
+            return count.intValue() - o.count.intValue();
+        }
+    }
 
 }

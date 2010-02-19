@@ -5,16 +5,17 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
- * todo: authors? was author Vitali Kiruta
+ * @author Nicola Aloia <nicola.aloia@isti.cnr.it>
+ * @author Cesare Corcordia <cesare.concordia@isti.cnr.it>
  */
 @Entity
 public class Token {
 
     @Id
-    @Column(length=64, nullable = false)
+    @Column(length = 64, nullable = false)
     private String token;
 
-    @Column(length=64, nullable = false)
+    @Column(length = 64, nullable = false)
     private String email;
 
     @Column(nullable = false)

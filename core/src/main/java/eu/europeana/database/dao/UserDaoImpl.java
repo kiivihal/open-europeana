@@ -22,8 +22,11 @@
 package eu.europeana.database.dao;
 
 import eu.europeana.database.UserDao;
-import eu.europeana.database.domain.*;
-import eu.europeana.database.integration.TagCount;
+import eu.europeana.database.domain.EuropeanaId;
+import eu.europeana.database.domain.SavedItem;
+import eu.europeana.database.domain.SavedSearch;
+import eu.europeana.database.domain.SocialTag;
+import eu.europeana.database.domain.User;
 import org.apache.log4j.Logger;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +38,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+
+/**
+ * @author Nicola Aloia <nicola.aloia@isti.cnr.it>
+ * @author Cesare Corcordia <cesare.concordia@isti.cnr.it>
+ */
 @SuppressWarnings("unchecked")
 public class UserDaoImpl implements UserDao {
 
@@ -252,7 +260,7 @@ public class UserDaoImpl implements UserDao {
     @Transactional
     public List<TagCount> getSocialTagCounts(String pattern) {
         Query query = entityManager.createQuery(
-                "select new eu.europeana.database.integration.TagCount(socialTag.tag, count(socialTag.tag)) from SocialTag socialtag " +
+                "select count(socialTag.tag) from SocialTag socialtag " +
                         "where socialtag.tag like :pattern " +
                         "group by socialTag.tag"
         );

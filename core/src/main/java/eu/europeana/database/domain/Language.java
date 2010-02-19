@@ -7,6 +7,8 @@ import java.util.Set;
  * All of the languages supported
  *
  * @author Gerald de Jong, Beautiful Code BV, <geralddejong@gmail.com>
+ * @author Nicola Aloia <nicola.aloia@isti.cnr.it>
+ *
  */
 
 public enum Language {
@@ -617,7 +619,13 @@ public enum Language {
         if (code == null) {
             return null;
         }
-        return valueOf(code.toUpperCase());
+        Language language = Language.EN;
+        try {
+            language = valueOf(code.toUpperCase());
+        } catch (IllegalArgumentException e) {
+          // swallow the exception when language cannot be found.
+        }
+        return language;
     }
 
     public static Language findByName(String name) {

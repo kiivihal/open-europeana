@@ -289,6 +289,11 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
                 <artifactId>spring-webmvc</artifactId>
                 <version>${spring.version}</version>
             </dependency>
@@ -448,6 +453,29 @@
                 <artifactId>joda-time</artifactId>
                 <version>1.6</version>
             </dependency>
+            <dependency>
+                <groupId>net.sourceforge.wurfl</groupId>
+                <artifactId>wurfl</artifactId>
+                <version>1.0.1-rc3</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-beans</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-web</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-support</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.lucene</groupId>
@@ -468,7 +496,7 @@
         </dependencies>
     </dependencyManagement>
     <properties>
-        <europeana.core.version>1.0.6</europeana.core.version>
+        <europeana.core.version>1.0.8</europeana.core.version>
         <europeana.sip-creator.version>2.8</europeana.sip-creator.version>
         <europeana.portal.version>0.5</europeana.portal.version>
         <europeana.api.version>0.1</europeana.api.version>
