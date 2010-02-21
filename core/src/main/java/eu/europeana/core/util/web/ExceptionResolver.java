@@ -69,6 +69,7 @@ public class ExceptionResolver implements HandlerExceptionResolver {
         this.emailSender = emailSender;
     }
 
+    @Override
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response, Object object, Exception exception) {
         QueryProblem queryProblem = QueryProblem.NONE;
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

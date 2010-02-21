@@ -98,6 +98,7 @@ public class ObjectCacheImpl implements ObjectCache {
         File cacheRoot = getCacheRoot(root, itemSize, hash);
         File[] files = cacheRoot.listFiles(new FileFilter() { // todo: can we avoid listing and go directly?
 
+            @Override
             public boolean accept(File file) {
                 return file.getName().startsWith(hash);
             }

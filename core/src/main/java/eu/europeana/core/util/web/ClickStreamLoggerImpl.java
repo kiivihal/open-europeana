@@ -74,6 +74,7 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
                         action, printLogAffix(request), logString));
     }
 
+    @Override
     public void log(HttpServletRequest request, StaticPageType pageType) {
         log.info(
                 MessageFormat.format(

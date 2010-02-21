@@ -46,6 +46,7 @@ public class DashboardDaoImpl implements DashboardDao {
     @PersistenceContext
     protected EntityManager entityManager;
 
+    @Override
     @Transactional
     public EuropeanaId fetchEuropeanaId(String europeanaUri) {
         Query query = entityManager.createQuery("select id from EuropeanaId as id where id.europeanaUri = :europeanaUri");
@@ -58,6 +59,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return result.get(0);
     }
 
+    @Override
     @Transactional
     public List<DashboardLog> fetchLogEntriesFrom(Long bottomId, int pageSize) {
         Query query = entityManager.createQuery("select log from DashboardLog log where log.id >= :bottomId order by log.id asc");
@@ -66,6 +68,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return (List<DashboardLog>) query.getResultList();
     }
 
+    @Override
     @Transactional
     public List<DashboardLog> fetchLogEntriesTo(Long topId, int pageSize) {
         Query query = entityManager.createQuery("select log from DashboardLog log where log.id <= :bottomId order by log.id desc");
@@ -73,6 +76,7 @@ public class DashboardDaoImpl implements DashboardDao {
         query.setMaxResults(pageSize);
         List<DashboardLog> entries = (List<DashboardLog>) query.getResultList();
         Collections.sort(entries, new Comparator<DashboardLog>() {
+            @Override
             public int compare(DashboardLog a, DashboardLog b) {
                 if (a.getId() > b.getId()) {
                     return 1;
@@ -95,6 +99,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return (List<DashboardLog>) query.getResultList();
     }
 
+    @Override
     @Transactional
     public List<EuropeanaCollection> fetchCollections() {
         Query query = entityManager.createQuery("select c from EuropeanaCollection c where c.collectionState = :collectionState order by c.name");
@@ -103,6 +108,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return (List<EuropeanaCollection>) query.getResultList();
     }
 
+    @Override
     @Transactional
     public List<EuropeanaCollection> fetchCollections(String prefix) {
         Query query = entityManager.createQuery("select c from EuropeanaCollection c where c.name like :prefix");
@@ -110,6 +116,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return (List<EuropeanaCollection>) query.getResultList();
     }
 
+    @Override
     @Transactional
     public EuropeanaCollection fetchCollection(String collectionName, String collectionFileName, boolean createIfAbsent) {
         Query query;
@@ -142,11 +149,13 @@ public class DashboardDaoImpl implements DashboardDao {
         }
     }
 
+    @Override
     @Transactional
     public EuropeanaCollection fetchCollection(Long id) {
         return entityManager.find(EuropeanaCollection.class, id);
     }
 
+    @Override
     @Transactional
     public EuropeanaCollection updateCollection(EuropeanaCollection collection) {
         if (collection.getId() != null) {
@@ -172,6 +181,7 @@ public class DashboardDaoImpl implements DashboardDao {
         }
     }
 
+    @Override
     @Transactional
     public EuropeanaCollection prepareForImport(Long collectionId) {
         EuropeanaCollection collection = entityManager.find(EuropeanaCollection.class, collectionId);
@@ -181,6 +191,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return collection;
     }
 
+    @Override
     @Transactional
     public EuropeanaCollection setImportError(Long collectionId, String importError) {
         EuropeanaCollection collection = entityManager.find(EuropeanaCollection.class, collectionId);
@@ -195,6 +206,7 @@ public class DashboardDaoImpl implements DashboardDao {
      * Note: the collections are returned so that the caller can also make delete calls to the lucene index
      */
 
+    @Override
     @Transactional
     public List<EuropeanaCollection> disableAllCollections() {
         // find all collections that are enabled;
@@ -225,6 +237,7 @@ public class DashboardDaoImpl implements DashboardDao {
      * Note: probably a good idea to disable all collections first, for certainty.
      */
 
+    @Override
     @Transactional
     public void enableAllCollections() {
         // find imported collections
@@ -238,6 +251,7 @@ public class DashboardDaoImpl implements DashboardDao {
         }
     }
 
+    @Override
     @Transactional()
     public EuropeanaId saveEuropeanaId(EuropeanaId detachedId) {
         EuropeanaId persistentId = getEuropeanaId(detachedId);
@@ -257,6 +271,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return persistentId;
     }
 
+    @Override
     @Transactional(readOnly = true)
     public EuropeanaId getEuropeanaId(EuropeanaId id) {
         Query query = entityManager.createQuery("select id from EuropeanaId as id where id.europeanaUri = :uri and id.collection = :collection");
@@ -279,6 +294,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return (List<EuropeanaId>) query.getResultList();
     }
 
+    @Override
     @Transactional
     public boolean addToIndexQueue(EuropeanaCollection collection) { // todo: only used by this dao itself, so could be private or inlined
         Query query = entityManager.createQuery("select count(id) from EuropeanaId id where id.collection = :collection and id.orphan = false");
@@ -297,6 +313,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return true;
     }
 
+    @Override
     @Transactional
     public void removeFromIndexQueue(EuropeanaCollection collection) {  // todo: only used by this dao itself, so could be private or inlined
         // remove collection to index Queue
@@ -314,6 +331,7 @@ public class DashboardDaoImpl implements DashboardDao {
 
     // todo: this function has not been fully tested yet
 
+    @Override
     @Transactional
     public IndexingQueueEntry getEntryForIndexing() {
         Query query = entityManager.createQuery("select entry from IndexingQueueEntry as entry where entry.collection.collectionState <> :collectionState");
@@ -327,6 +345,7 @@ public class DashboardDaoImpl implements DashboardDao {
         }
     }
 
+    @Override
     @Transactional
     public List<EuropeanaId> getEuropeanaIdsForIndexing(int maxResults, IndexingQueueEntry collection) {
         Long lastId = collection.getLastProcessedRecordId();
@@ -347,6 +366,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return result;
     }
 
+    @Override
     @Transactional
     public void saveRecordsIndexed(int indexedRecords, IndexingQueueEntry queueEntry, EuropeanaId lastEuropeanaId) {
         IndexingQueueEntry attached = entityManager.find(IndexingQueueEntry.class, queueEntry.getId());
@@ -356,6 +376,7 @@ public class DashboardDaoImpl implements DashboardDao {
         log.info(MessageFormat.format("updated indexQueue for queueEntry: {0} ({1}/{2})", queueEntry.getCollection().getName(), recordsIndexed, queueEntry.getTotalRecords()));
     }
 
+    @Override
     @Transactional
     public IndexingQueueEntry startIndexing(IndexingQueueEntry indexingQueueEntry) {
         IndexingQueueEntry attached = entityManager.find(IndexingQueueEntry.class, indexingQueueEntry.getId());
@@ -363,6 +384,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return attached;
     }
 
+    @Override
     @Transactional
     public List<IndexingQueueEntry> fetchQueueEntries() {
         Query indexQuery = entityManager.createQuery("select entry from IndexingQueueEntry as entry");
@@ -372,6 +394,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return entries;
     }
 
+    @Override
     @Transactional
     public EuropeanaCollection updateCollectionCounters(Long collectionId) {
         EuropeanaCollection collection = entityManager.find(EuropeanaCollection.class, collectionId);
@@ -411,6 +434,7 @@ public class DashboardDaoImpl implements DashboardDao {
         return numberUpdated;
     }
 
+    @Override
     @Transactional
     public void log(String who, String what) {
         DashboardLog log = new DashboardLog(who, new Date(), what);

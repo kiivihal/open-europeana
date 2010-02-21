@@ -66,7 +66,10 @@ public class FacetQueryLinks {
                 }
                 else {
                     if (!remove) {
-                        url.append(FACET_PROMPT).append(count.getFacetField().getName() + ":" + count.getName());
+                        url.append(FACET_PROMPT);
+                        url.append(count.getFacetField().getName());
+                        url.append(":");
+                        url.append(count.getName());
                     }
                     links.add(new FacetCountLink(count, url.toString(), remove));
                 }
