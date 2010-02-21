@@ -424,12 +424,11 @@ public class DashboardDaoImpl implements DashboardDao {
 
     @Transactional
     private int markOrphans(EuropeanaCollection collection) {
-        int numberUpdated;
         Query orphanQountUpdate = entityManager.createQuery("update EuropeanaId id set orphan = :orphan where collection = :collection and lastModified < :lastmodified");
         orphanQountUpdate.setParameter("collection", collection);
         orphanQountUpdate.setParameter("orphan", true);
         orphanQountUpdate.setParameter("lastmodified", collection.getCollectionLastModified());
-        numberUpdated = orphanQountUpdate.executeUpdate();
+        int numberUpdated = orphanQountUpdate.executeUpdate();
         log.info(String.format("Found %d orphans in collection %s", numberUpdated, collection.getName()));
         return numberUpdated;
     }

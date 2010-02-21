@@ -598,7 +598,7 @@ public class ESEImporterImpl implements ESEImporter {
         }
     }
 
-    private String exceptionToErrorString(ImportException exception) {
+    private static String exceptionToErrorString(ImportException exception) {
         StringBuilder out = new StringBuilder();
         out.append(exception.getMessage());
         Throwable cause = exception.getCause();

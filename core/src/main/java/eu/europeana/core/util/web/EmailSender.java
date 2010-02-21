@@ -21,6 +21,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.Map;
 
 /**
@@ -137,7 +138,7 @@ public class EmailSender {
             log.error("to: "+toEmail);
             log.error("subject: "+subject);
             for (Map.Entry<String, Object> entry : model.entrySet()) {
-                log.error(entry.getKey()+" = "+entry.getValue());
+                log.error(MessageFormat.format("{0} = {1}", entry.getKey(), entry.getValue()));
             }
             throw new IOException("Unable to send email", e);
         }
@@ -215,7 +216,7 @@ return out.toString();
         return getTemplate(fileName, new InputStreamReader(getClass().getResourceAsStream(fileName)));
     }
 
-    private Template getTemplate(String name, Reader reader) throws IOException {
+    private static Template getTemplate(String name, Reader reader) throws IOException {
         Configuration configuration = new Configuration();
         configuration.setObjectWrapper(new DefaultObjectWrapper());
         return new Template(name, reader, configuration);

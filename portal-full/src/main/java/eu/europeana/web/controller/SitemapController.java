@@ -71,12 +71,12 @@ public class SitemapController {
             @RequestParam(value = "page", required = false) String page,
             HttpServletRequest request
     ) throws Exception {
-        ModelAndView mavPage;
         String fullDocPageString = "full-doc.html";
         String baseUrl = fullViewUrl;
         if (baseUrl.endsWith(fullDocPageString)) {
             baseUrl = baseUrl.substring(0, fullViewUrl.length() - fullDocPageString.length());
         }
+        ModelAndView mavPage;
         if (collection == null) {
             List<SitemapIndexEntry> entries = new ArrayList<SitemapIndexEntry>();
             // todo maybe this query must be cached because it might be too heavy a query on the database

@@ -31,8 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * This class encapsulates the WURFL-Browser detection
- *  
- * 
+ *
+ *
  * @author Dennis Heinen <Dennis.Heinen@offis.de>
  *
  */
@@ -42,16 +42,16 @@ public class DeviceRecognition {
 
 	private WURFLManager _wurfl = null;
 	private ServletContext servletContext = null;
-	
+
 	/**
 	 * Returns the ServletContext
-	 * 
+	 *
 	 * @return the ServletContext
 	 */
 	public ServletContext getContext() {
 		return servletContext;
 	}
-	
+
 	/**
 	 * Sets the ServletContext, used to create the WurflManager
 	 * @param servletContext
@@ -67,17 +67,17 @@ public class DeviceRecognition {
 	}
 
 	/**
-	 * Returns a template for the current device, best suited for its capabilities. 
-	 * e.g. if template is 'index_orig' and the device's screen is 320x480, 
-	 * the returned String is 'mobile\320x480\index_orig' > the template is chosen 
+	 * Returns a template for the current device, best suited for its capabilities.
+	 * e.g. if template is 'index_orig' and the device's screen is 320x480,
+	 * the returned String is 'mobile\320x480\index_orig' > the template is chosen
 	 * from the mobile\320x480 subdirectory of the template path
 	 * This method will evolve during the course of the project.
-	 * 
+	 *
 	 * @param request The request, used to determine the device
 	 * @param template The template that shall be used
 	 * @return Best suited template for mobile device
 	 */
-	public String GetDeviceTemplate(HttpServletRequest request, String template) {
+	public String getDeviceTemplate(HttpServletRequest request, String template) {
 		String result = template;
 		if (template != null) {
 				if (_wurfl != null) {

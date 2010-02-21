@@ -45,12 +45,12 @@ public class SiteMapController {
             @RequestParam(value = "page", required = false) String page,
             HttpServletRequest request
     ) throws Exception {
-        ModelAndView mavPage;
         String fullDocPageString = "full-doc.html";
         String baseUrl = fullViewUrl;
         if (baseUrl.endsWith(fullDocPageString)) {
             baseUrl = baseUrl.substring(0, fullViewUrl.length() - fullDocPageString.length());
         }
+        ModelAndView mavPage;
         if (collection == null) {
             List<SitemapIndexEntry> entries = new ArrayList<SitemapIndexEntry>();
             List<EuropeanaCollection> europeanaCollections = dashboardDao.fetchCollections();
