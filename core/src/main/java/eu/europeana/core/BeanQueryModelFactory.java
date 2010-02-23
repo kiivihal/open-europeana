@@ -188,11 +188,6 @@ public class BeanQueryModelFactory implements QueryModelFactory {
     }
 
     @Override
-    public GridBrowseBeanView getGridBrowseResultView(SolrQuery solrQuery) throws EuropeanaQueryException {
-        return null;  //TODO: implement this
-    }
-
-    @Override
     public List<?> getDocIdList(Map<String, String[]> params) throws EuropeanaQueryException, SolrServerException {
         SolrQuery solrQuery = createFromQueryParams(params);
         Integer start = solrQuery.getStart();
@@ -269,7 +264,7 @@ public class BeanQueryModelFactory implements QueryModelFactory {
         private Map<String, String> facetLogs;
         private BriefDoc matchDoc;
 
-        @SuppressWarnings("unchecked")
+//        @SuppressWarnings("unchecked")
         private BriefBeanViewImpl(SolrQuery solrQuery, QueryResponse solrResponse, String requestQueryString) throws UnsupportedEncodingException {
             pagination = createPagination(solrResponse, solrQuery, requestQueryString);
             briefDocs = addIndexToBriefDocList(solrQuery, (List<? extends BriefDoc>) solrResponse.getBeans(briefBean));

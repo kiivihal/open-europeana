@@ -2,9 +2,8 @@ package eu.europeana.core.validation;
 
 /**
  * @author Sjoerd Siebinga <sjoerd.siebinga@gmail.com>
- * @since Feb 21, 2010 11:33:11 AM
+ * @since Feb 21, 2010 7:35:45 PM
  */
-interface ESEImportErrors {
-    // todo finish interface
-
+public interface EuropeanaQuery {
+    // todo finish this interface
 }
