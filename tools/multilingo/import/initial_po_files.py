@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
  Copyright 2010 EDL FOUNDATION
 
@@ -60,7 +62,8 @@ class InitializePropertifiles(object):
                                   'templates', 'pages')
     HTML_PROPS_FNAME = os.path.join(TEMPLATES_BASE, 'prop_file.html')
     ERR_NODE_VALUE = '*** NODEVALUE'
-    NOT_IN_THIS_LANG = '* not used in this language *'
+    EMPTY_STR = '** Empty string **' # hopefully will set translation to ' '
+                                     # in order to avoid warnings of untranslated strings
 
     def __init__(self, lang='', debug=1):
         # debug lvls:
@@ -98,7 +101,12 @@ class InitializePropertifiles(object):
         self.create_po_file() # Create po file if not there
 
         self.translate_properties()
-        self.transl_aboutus()
+        if self.lang == 'en':
+            return # dont translate english...
+        if self.lang in ('de','es','fi','fr','is','it','no','sv'):
+            self.transl_aboutus()
+            self.po.save_as_mofile(self.po_base_name + '.mo')
+        return
 
 
     #
@@ -117,43 +125,63 @@ class InitializePropertifiles(object):
         self.doc = x.childNodes[0] # dump wrapper1
 
         i = 0
+        #<h2>
         self.translate('About us', self.nodevalue(i)) ;i+=5
+        #<object><a>
         self.translate('Storyline and Credits', self.nodevalue(i)) ;i+=2
+        #<h2>
         self.translate('Europeana: think culture', self.nodevalue(i)) ;i+=2
 
         # insert dynamic number of objs
-        s = self.purge_punctuation(self.nodevalue(i),END) ;i+=2
+        s = self.nodevalue(i) ;i+=2
+
+        #<p>
         if '6' in s:
             s = s.replace('6', '%(europeana_item_count_mill)s')
+        elif 'milj' in s:
+            s = s.replace('milj', '%(europeana_item_count_mill)s milj')
         else:
             print
             print '*** milions of objects not found'
             sys.exit()
         self.translate('Europeana.eu is about ideas and inspiration. It links*', s)
 
+        #<ul><li>
         i2 = 1
         self.translate('Images - paintings, drawings, maps, photos and pictures of museum objects',
                        self.nodevalue(i, i2)) ;i2+=2
+        #<li>
         self.translate('Texts - books, newspapers, letters, diaries and archival papers',
                        self.nodevalue(i,i2)) ;i2+=2
+        #<li>
         self.translate('Sounds - music and spoken word from cylinders, tapes, discs and radio broadcasts',
                        self.nodevalue(i,i2)) ;i2+=2
+        #<li>
         self.translate('Videos - films, newsreels and TV broadcasts',
                        self.nodevalue(i,i2)) ;i2+=2
 
+        #<p>
         i+=2 ; i2=1
         self.translate("Some of these are world famous, others are hidden treasures from Europe's",
                        self.nodevalue(i)) ;i+=2
         i2=1
         self.translate('museums and galleries',
                        self.nodevalue(i,i2)) ;i2+=2
-        self.translate('archives', self.nodevalue(i,i2)) ;i2+=2
+        self.translate('archives',
+                       self.nodevalue(i,i2)) ;i2+=2
         self.translate('libraries', self.nodevalue(i,i2)) ;i2+=2
         self.translate('audio-visual collections',
                        self.nodevalue(i,i2)) ;i2+=2
 
+        #<p>
         i+=4 ; i2=1
         self.translate('Here is a', self.nodevalue(i))
+        if self.lang in ('it',):
+            i+=2
+            s = self.nodevalue(i,0)
+        else:
+            s = self.EMPTY_STR
+        self.translate('#[about_us: paragraph Here is a - prefix for partners.html]',s)
         self.translate('list of the organisations',
                        self.nodevalue(i,i2))
 
@@ -163,132 +191,201 @@ class InitializePropertifiles(object):
         value = u' '.join(lst)
         self.translate('that our content comes from. They include*', value)
 
+        #<p>
         i+=2 ; i2=1
-        self.translate('You can use', self.nodevalue(i))
+        if self.lang not in ('fi','es'):
+            s = self.nodevalue(i)
+        else:
+            s = self.EMPTY_STR
+        self.translate('You can use', s)
         self.translate('My Europeana', self.nodevalue(i,i2)) ;i2+=1
         self.translate('to save searches or bookmark things. You can highlight stuff and add it to your own folders',
-                       self.purge_punctuation(self.nodevalue(i,i2),END)) ;i+=2
+                       self.nodevalue(i,i2)) ;i+=2
+
+        #<p>
         self.translate('This website is a prototype. Europeana Version*',
-                       self.purge_punctuation(self.nodevalue(i),END)) ;i+=2
+                       self.nodevalue(i)) ;i+=2
+
+        #<p>
         self.translate('Europeana.eu is funded by the European*',
-                       self.purge_punctuation(self.nodevalue(i),END)) ;i+=2
+                       self.nodevalue(i)) ;i+=2
 
-        # remove a trailing : from previous templates
-        v = self.nodevalue(i).strip() ;i+=2
-        if v[-1] == ':':
-            v = v[:-1]
-        self.translate('More about', v)
+        #<p>
+        self.translate('More about', self.nodevalue(i)) ;i+=2
 
-        # <li>
+
+        #<ul><li>
         i2=1
         self.translate('How Europeana came to be developed',
-                       self.purge_punctuation(self.nodevalue(i,i2),END))
-        i3=1
-        self.translate('the background',
-                       self.nodevalue(i,i2,i3)) ;i3+=1
-        self.translate('to the project',
-                       self.nodevalue(i,i2,i3)) ;i2+=2
-        # <li>
+                       self.nodevalue(i,i2))
+        if self.lang not in ('no'):
+            i3=1
+            s1 = self.nodevalue(i,i2,i3) ; i3+=1
+            if self.lang not in ('fi',):
+                s2 =  self.nodevalue(i,i2,i3)
+            else:
+                s2 = self.EMPTY_STR
+        else:
+            s1 = s2 = self.EMPTY_STR
+        self.translate('the background', s1)
+        self.translate('to the project', s2)
+        i2+=2
+        #<li>
         i3=1
         self.translate('The deliverables from the project',
-                       self.purge_punctuation(self.nodevalue(i,i2),END))
-        self.translate('technical plans',
-                       self.nodevalue(i,i2,i3)) ;i3+=1
-        self.translate('etc',
-                       self.nodevalue(i,i2,i3)) ;i2+=2
-        # <li>
+                       self.nodevalue(i,i2))
+        self.translate('technical plans', self.nodevalue(i,i2,i3)) ;i3+=1
+        self.translate('etc', self.nodevalue(i,i2,i3)) ;i2+=2
+        #<li>
         self.translate('New projects that will be channelling material into',
                        self.nodevalue(i,i2)) ;i2+=4
         # <li>
         i3=1
-        self.translate('How organisations can',
-                       self.nodevalue(i,i2))
-        self.translate('contribute content',
-                       self.nodevalue(i,i2,i3)) ;i3+=1
-        self.translate('to Europeana',
-                       self.nodevalue(i,i2,i3)) ;i2+=2
-
-        # <li>
-        if self.lang == 'de':
-            v = self.NOT_IN_THIS_LANG
+        self.translate('How organisations can', self.nodevalue(i,i2))
+        self.translate('contribute content', self.nodevalue(i,i2,i3)) ;i3+=1
+        if self.lang not in ('nl',):
+            s = self.nodevalue(i,i2,i3)
+        else:
+            s = self.EMPTY_STR
+        self.translate('to Europeana', s)
+        i2+=2
+        #<li>
+        if self.lang in ('de','fi','es'):
+            v = self.EMPTY_STR
             i3 = 0
         else:
             v = self.nodevalue(i,i2)
             i3 = 1
         self.translate('Getting in', v)
-        self.translate('contact',
-                       self.nodevalue(i,i2,i3)) ;i3+=1
-        self.translate('with the Europeana team',
-                       self.nodevalue(i,i2,i3)) ;i2+=2
-        # <li>
-        i3 = 1
-        self.translate('To be added to the',
-                       self.nodevalue(i,i2))
-        self.translate('press list',
-                       self.nodevalue(i,i2,i3)) ;i2+=2
 
+        self.translate('contact', self.nodevalue(i,i2,i3)) ;i3+=1
+        self.translate('with the Europeana team', self.nodevalue(i,i2,i3)) ;i2+=2
+        #<li>
+        i3 = 1
+        self.translate('To be added to the', self.nodevalue(i,i2))
+        self.translate('press list', self.nodevalue(i,i2,i3)) ;i2+=2
         # <li>
         i3 = 0
         if self.lang in ('de', 'sv'):
-            v = self.NOT_IN_THIS_LANG
+            v = self.EMPTY_STR
         else:
             v = self.nodevalue(i,i2,i3)
-        self.translate('The', v)
+        self.translate('#The[about_us: paragraph More about last list item - prefix for enews.php]', v)
         self.translate('e-news', self.nodevalue(i,i2,i3)) ;i3+=1 #29,15,0
         self.translate('to keep you in touch with developments',
                        self.nodevalue(i,i2,i3)) ;i+=4
 
-
+        #<h2>
         self.translate('Background', self.nodevalue(i)) ; i+=2
+
+        # BL/A
+        if self.lang not in ('no','fi','it','is'):
+            s = self.nodevalue(i)
+            i+=2
+        else:
+            s = self.EMPTY_STR
+        #<p>
         self.translate('The Commission has been working for a number of years on projects to boost*',
-                       self.purge_punctuation(self.nodevalue(i),END)) ;i+=2
-
+                       s)
+        #<p>
         i2 = 1
-        self.translate('The idea for Europeana came from a',
+        self.translate('The idea for Europeana came from a', self.nodevalue(i)) #BL/B
+        self.translate('letter', self.nodevalue(i,i2)) ;i2+=1 #BL/C
+        self.translate('to the Presidency of Council and to the Commission on*', #BL/D
+                       self.nodevalue(i,i2)) ;i+=2
+        #<p>
+        i2 = 1
+        self.translate('On 30 September 2005 the European Commission published*', #BL/E
                        self.nodevalue(i))
-        self.translate('letter', self.nodevalue(i,i2)) ;i2+=1
-        self.translate('to the Presidency of Council and to the Commission on*',
-                       self.purge_punctuation(self.nodevalue(i,i2),END)) ;i+=2
+        if self.lang not in ('de','es','fi','fr','nl','no','it'):
+            s = self.nodevalue(i,i2)
+            i2+=1
+        else:
+            i+=2 ; i2 = 0
+        self.translate('Information Society i2010 Initiative', s) #BL/F
 
-        self.translate('On 30 September 2005 the European Commission published*',
-                       self.purge_punctuation(self.nodevalue(i),END)) ;i+=2
-        self.translate('which aims to foster growth and jobs in the information society*',
-                       self.purge_punctuation(self.nodevalue(i),END)) ;i+=2
-        self.translate('The Europeana prototype is the result*',
-                       self.purge_punctuation(self.nodevalue(i),END)) ;i+=2
+        if self.lang == 'is':
+            lst = [self.nodevalue(i,i2)]
+            i+=2
+            lst.append(self.nodevalue(i))
+            s = ' '.join(lst)
+        else:
+            s = self.nodevalue(i,i2)
+        i+=2
+        self.translate('which aims to foster growth and jobs in the information society*',s) #BL/G
 
+        #<p>
+        if self.lang in ('sv',):
+            i+=2 # skip commented out block
+        self.translate('The Europeana prototype is the result*', #BL/H
+                       self.nodevalue(i)) ;i+=2
         #<p>
         i2=2
         self.translate('Europeana is a Thematic Network funded by  the European Commission under the',
-                       self.nodevalue(i))
-        self.translate('as part of the',
-                       self.purge_punctuation(self.nodevalue(i,i2),START)) ;i2+=1
-        self.translate('i2010  policy', self.nodevalue(i,i2)) ;i2+=1
+                       self.nodevalue(i)) #BL/I
+        #if self.lang == 'fr':
+        #    return 0 # havent been able to match up the rest so far...
+        if self.lang in ('fr','it'): #BL/J
+            s = self.EMPTY_STR
+        else:
+            s = self.nodevalue(i,i2)
+            i2+=1
+        self.translate('as part of the',s)
+
+        if self.lang in ('fr','it'): #BL/K
+            s = self.EMPTY_STR
+        else:
+            s = self.nodevalue(i,i2)
+            i2+=1
+        self.translate('i2010  policy',s)
+
+        if self.lang in ('fr','it'): #BL/L
+            s = self.EMPTY_STR
+        else:
+            s = self.nodevalue(i,i2)
         self.translate('Originally known as the European digital library network*',
-                       self.purge_punctuation(self.nodevalue(i,i2),BOTH)) ;i+=2;i2+=1
-
+                       s) ;i+=2
         #<p>
-        i2=2
         self.translate('The project is run by a core team based in  the national library of the Netherlands, the',
-                       self.nodevalue(i),
-                       punctuation_variance_ok=True)
-        self.translate('It builds on the project management and technical  expertise developed by',
-                       self.purge_punctuation(self.nodevalue(i,i2),START)) ;i2+1
-        self.translate('The  European Library',
-                       self.purge_punctuation(self.nodevalue(i,i2),START)) ;i2+1
-        self.translate('which is a service of the',
-                       self.purge_punctuation(self.nodevalue(i,i2),START)) ;i2+=1
-        self.translate('Conference of European National  Librarians',
-                       self.nodevalue(i,i2)) ;i+=2
+                       self.nodevalue(i)) #BL/M
+
+        if self.lang in ('fr','it'): #BL/N
+            i2=1
+            s = self.EMPTY_STR
+        else:
+            i2=2
+            s = self.nodevalue(i,i2)
+            i2+=1
+        self.translate('It builds on the project management and technical  expertise developed by', s)
+
+        if self.lang in ('fr','it'): #BL/O
+            s = self.EMPTY_STR
+        else:
+            s = self.nodevalue(i,i2)
+            i2+=1
+        self.translate('The  European Library', s)
+
+        if self.lang in ('fr','it'): #BL/P
+            s = self.EMPTY_STR
+        else:
+            s = self.nodevalue(i,i2)
+            i2+=1
+        self.translate('which is a service of the', s)
+
+        if self.lang in ('fr',): #BL/Q
+            s = self.EMPTY_STR
+        else:
+            s = self.nodevalue(i,i2)
+            i2+=1
+        self.translate('Conference of European National  Librarians',s);i+=2
 
         #<p>
         i2=2
-        self.translate('Overseeing the project is the', self.nodevalue(i))
-        self.translate('which includes key European  cultural heritage associations*',
-                       self.purge_punctuation(self.nodevalue(i,i2),START)) ;i2+=1
-        self.translate('statutes', self.nodevalue(i,i2)) ;i2+=1
-        self.translate('commit members to',
-                       self.purge_punctuation(self.nodevalue(i,i2),END)) ;i+=2
+        self.translate('Overseeing the project is the', self.nodevalue(i)) #BL/R
+        self.translate('which includes key European  cultural heritage associations*', #BL/S
+                       self.nodevalue(i,i2)) ;i2+=1
+        self.translate('statutes', self.nodevalue(i,i2)) ;i2+=1 #BL/T
+        self.translate('commit members to', self.nodevalue(i,i2),recursion=2) ;i+=2 #BL/U
 
         #<ul>
         self.translate('Providing access to Europe&rsquo;s cultural and scientific heritage though a <strong>cross-domain portal</strong>',
@@ -300,27 +397,49 @@ class InitializePropertifiles(object):
         self.translate('Supporting  <strong>digitisation</strong> of Europe&rsquo;s cultural and scientific heritage',
                        self.nodevalue(i,7)) ;i+=6
 
-        self.translate('Technical plans', self.nodevalue(i)) ;i+=2
-
+        #<h2>
+        self.translate('Technical plans', self.nodevalue(i)) ;i+=2 #tp/a
         #<p>
         self.translate('The development route, site architecture and technical specifications are all published as',
-                       self.nodevalue(i))
-        self.translate('deliverable outcomes', self.nodevalue(i,1))
-        self.translate('of the project. After the launch of the Europeana prototype, the project*',
-                       self.purge_punctuation(self.nodevalue(i,2),BOTH)) ;i+=4
+                       self.nodevalue(i)) #tp/b
+        if self.lang == 'is': #tp/c
+            s = 'deliverable outcomes'
+        else:
+            s = self.nodevalue(i,1)
+        self.translate('deliverable outcomes', s)
 
+        if self.lang == 'is': #tp/d
+            s = self.EMPTY_STR
+        else:
+            s = self.nodevalue(i,2)
+        self.translate('of the project. After the launch of the Europeana prototype, the project*',
+                       s) ;i+=4
+
+        #<h2>
         self.translate('Contact us', self.nodevalue(i)) ;i+=2
-        self.translate('Feedback form', self.nodevalue(i,1)) ;i+=16
+        #<p>
+        self.translate('Feedback form', self.nodevalue(i,1))
+        if self.lang == 'fr':
+            i+=8
+        elif self.lang == 'it':
+            i+=14
+        else:
+            i+=16
+        #<h2>
         self.translate('To be added to the press list contact',
                        self.nodevalue(i)) ;i+=8
+
+        #<h2>
         self.translate('To provide content to Europeana',
                        self.nodevalue(i)) ;i+=2
+        #<p>
         self.translate('content providers', self.nodevalue(i,1)) ;i+=2
 
-        if len(self.doc.childNodes) >= i:
-            self.translate('page on our project site', self.nodevalue())
+        self.translate('See the', self.EMPTY_STR)
+        self.translate('page on our project site', self.EMPTY_STR)
+
+
         #self.translate('', self.nodevalue())
-        self.po.save_as_mofile(self.po_base_name + '.mo')
 
 
 
@@ -401,6 +520,7 @@ class InitializePropertifiles(object):
                     continuation = False
                 self.lang_props[key] = self.lang_props[key] + ' ' + line
             pass
+        return
 
 
     def shell_cmd(self, cmd):
@@ -417,7 +537,10 @@ class InitializePropertifiles(object):
     #
     #  Internals related to page translation
     #
-    def translate(self, key, value, punctuation_variance_ok=False):
+    def translate(self, key, value, punctuation_variance_ok=False,
+                  purge_punctation=BOTH,recursion=0):
+        if purge_punctation:
+            value = self.punctuation_purge(value, purge_punctation, recursion)
         if key[-1] == '*':
             key = key[:-1] # strip end
             entry = None
@@ -438,10 +561,14 @@ class InitializePropertifiles(object):
             print '*** translation attempt on unknown key', key
             sys.exit(1)
         entry.msgstr = value.strip()
+        if entry.msgstr == self.EMPTY_STR:
+            entry.msgstr = ' '
         if self.debug > 2:
-            print '--key: [%s]' % entry.msgid
-            print 'value: [%s]' % entry.msgstr
-        if not punctuation_variance_ok:
+            print
+            print u'--key: [%s]' % entry.msgid
+            s =  u'value: [%s]' % entry.msgstr
+            print s.encode('utf-8')
+        if entry.msgstr and not punctuation_variance_ok:
             if entry.msgstr[0] in ('.,!'):
                 print '+++ suspicious initial punctation!'
             if entry.msgstr[-1] in (',;:'):
@@ -449,8 +576,6 @@ class InitializePropertifiles(object):
             if self.is_punctuated(entry.msgid) != self.is_punctuated(entry.msgstr):
                 print '+++ ending punctation differs between key and value!'
         if self.ERR_NODE_VALUE in entry.msgstr:
-            return
-        if value == self.NOT_IN_THIS_LANG:
             return
         self.po.save()
 
@@ -464,15 +589,20 @@ class InitializePropertifiles(object):
         return b
 
 
-    def purge_punctuation(self, s, end=BOTH):
+    def punctuation_purge(self, s, end=BOTH,recursion=0):
+        s = s.strip()
+        if not s:
+            return s
         if end in (BOTH,START):
-            s = s.strip()
             if s[0] in '.,':
                 s = s[1:]
         if end in (BOTH,END):
             s = s.strip()
-            if s[-1] in '.,;:':
+            if s[-1] in u'.,;:\xe5':
                 s = s[:-1]
+        if recursion > 0:
+            recursion -= 1
+            s = self.punctuation_purge(s, end, recursion)
         return s
 
 
@@ -516,9 +646,10 @@ def loop_on_languages():
         ip.clear_all_files()
 
     for lang in (
-        'fr',
-        #'sv','de',
-        #settings.LANGUAGES_DICT.keys()
+        #'en',
+        #'de','es','fi','fr','is','it','no','sv',
+        #'sv',
+        settings.LANGUAGES_DICT.keys()
         ):
         print '---Creating translations for:', lang
         InitializePropertifiles(lang, debug=9).handle_language()

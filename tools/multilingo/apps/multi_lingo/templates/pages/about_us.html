@@ -39,10 +39,10 @@ Java Developer</a> and
 
 <p>
 {% trans "Here is a" %}
-<a href="partners.html">{% trans "list of the organisations" %}</a>
+{% trans "#[about_us: paragraph Here is a - prefix for partners.html]" %}<a href="partners.html">{% trans "list of the organisations" %}</a>
 {% blocktrans %}that our content comes from. They include the <strong>Rijksmuseum</strong>
 in Amsterdam, the <strong>British Library</strong> in London and the
-<strong>Louvre</strong> in Paris.{% endblocktrans %}
+<strong>Louvre</strong> in Paris{% endblocktrans %}.
 </p>
 
 <p>
@@ -80,7 +80,7 @@ launch in 2010 with links to over 10 million digital objects{% endblocktrans %}.
 <li>{% trans "Getting in" %}
     <a  href="#contact">{% trans "contact" %}</a> {% trans "with the Europeana team" %}</li>
 <li>{% trans "To be added to the" %} <a href="#pressListContact">{% trans "press list" %}</a></li>
-<li>{% trans "The" %}
+<li>{% trans "#The[about_us: paragraph More about last list item - prefix for enews.php]" %}
     <a  href="http://dev.europeana.eu/enews.php" target="_blank">{% trans "e-news" %}</a>
     {% trans "to keep you in touch with developments" %}</li>
 </ul>
