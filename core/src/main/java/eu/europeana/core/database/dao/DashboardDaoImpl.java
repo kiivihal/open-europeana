@@ -102,6 +102,13 @@ public class DashboardDaoImpl implements DashboardDao {
     @Override
     @Transactional
     public List<EuropeanaCollection> fetchCollections() {
+        Query query = entityManager.createQuery("select c from EuropeanaCollection c order by c.name");
+        return (List<EuropeanaCollection>) query.getResultList();
+    }
+
+    @Override
+    @Transactional
+    public List<EuropeanaCollection> fetchEnabledCollections() {
         Query query = entityManager.createQuery("select c from EuropeanaCollection c where c.collectionState = :collectionState order by c.name");
         //important because only enabled collections are available in the search engine
         query.setParameter("collectionState", CollectionState.ENABLED);
