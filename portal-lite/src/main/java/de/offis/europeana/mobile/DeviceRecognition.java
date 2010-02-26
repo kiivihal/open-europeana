@@ -31,8 +31,8 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * This class encapsulates the WURFL-Browser detection
- *
- *
+ *  
+ * 
  * @author Dennis Heinen <Dennis.Heinen@offis.de>
  *
  */
@@ -40,18 +40,20 @@ public class DeviceRecognition {
 
 	private static final Logger log = Logger.getLogger(DeviceRecognition.class);
 
+	private boolean _simpleDesktopDetectionEnabled = true;
 	private WURFLManager _wurfl = null;
 	private ServletContext servletContext = null;
-
+	private Device _genericWebBrowser = null;
+	
 	/**
 	 * Returns the ServletContext
-	 *
+	 * 
 	 * @return the ServletContext
 	 */
 	public ServletContext getContext() {
 		return servletContext;
 	}
-
+	
 	/**
 	 * Sets the ServletContext, used to create the WurflManager
 	 * @param servletContext
@@ -62,17 +64,18 @@ public class DeviceRecognition {
 			WURFLHolder wurflHolder = (WURFLHolder) this.servletContext.getAttribute("net.sourceforge.wurfl.core.WURFLHolder");
 			if (wurflHolder != null) {
 				_wurfl = wurflHolder.getWURFLManager();
+				_genericWebBrowser = wurflHolder.getWURFLUtils().getDeviceById("generic_web_browser");
 			}
 		}
 	}
 
 	/**
-	 * Returns a template for the current device, best suited for its capabilities.
-	 * e.g. if template is 'index_orig' and the device's screen is 320x480,
-	 * the returned String is 'mobile\320x480\index_orig' > the template is chosen
+	 * Returns a template for the current device, best suited for its capabilities. 
+	 * e.g. if template is 'index_orig' and the device's screen is 320x480, 
+	 * the returned String is 'mobile\320x480\index_orig' > the template is chosen 
 	 * from the mobile\320x480 subdirectory of the template path
 	 * This method will evolve during the course of the project.
-	 *
+	 * 
 	 * @param request The request, used to determine the device
 	 * @param template The template that shall be used
 	 * @return Best suited template for mobile device
@@ -81,7 +84,15 @@ public class DeviceRecognition {
 		String result = template;
 		if (template != null) {
 				if (_wurfl != null) {
-					Device device = _wurfl.getDeviceForRequest(request);
+					String userAgent = request.getHeader("User-Agent");
+					log.info("UserAgent: "+userAgent);
+					Device device;
+					if (_simpleDesktopDetectionEnabled && 
+							SimpleDesktopUserAgentMatcher.isDesktopBrowser(userAgent)) {
+						device = _genericWebBrowser;
+					} else {
+						device = _wurfl.getDeviceForRequest(userAgent);
+					}
 					if (device != null && "true".equals(device.getCapability("is_wireless_device"))) { //desktop browsers will see the desired page, this is for mobile only
 						//The iphone templates are already available:
 						if (device.getUserAgent().toLowerCase().indexOf("safari") > 0){
