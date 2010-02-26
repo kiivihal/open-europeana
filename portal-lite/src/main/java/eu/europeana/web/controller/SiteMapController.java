@@ -53,7 +53,7 @@ public class SiteMapController {
         ModelAndView mavPage;
         if (collection == null) {
             List<SitemapIndexEntry> entries = new ArrayList<SitemapIndexEntry>();
-            List<EuropeanaCollection> europeanaCollections = dashboardDao.fetchCollections();
+            List<EuropeanaCollection> europeanaCollections = dashboardDao.fetchEnabledCollections();
             for (EuropeanaCollection europeanaCollection : europeanaCollections) {
                 for (int i = 0; i <= europeanaCollection.getTotalRecords() / MAX_RECORDS_PER_SITEMAP_FILE; i++) {
                     // add each page of a collection to the index.

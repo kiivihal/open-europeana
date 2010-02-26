@@ -80,7 +80,7 @@ public class SitemapController {
         if (collection == null) {
             List<SitemapIndexEntry> entries = new ArrayList<SitemapIndexEntry>();
             // todo maybe this query must be cached because it might be too heavy a query on the database
-            List<EuropeanaCollection> europeanaCollections = dashboardDao.fetchCollections();
+            List<EuropeanaCollection> europeanaCollections = dashboardDao.fetchEnabledCollections();
             for (EuropeanaCollection europeanaCollection : europeanaCollections) {
                 for (int i = 0; i <= europeanaCollection.getTotalRecords() / MAX_RECORDS_PER_SITEMAP_FILE; i++) {
                     // add each page of a collection to the index.
