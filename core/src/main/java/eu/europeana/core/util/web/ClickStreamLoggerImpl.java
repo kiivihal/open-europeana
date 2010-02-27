@@ -92,7 +92,7 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
     }
 
     @Override
-    public void logBriefResultView(HttpServletRequest request, BriefBeanView briefBeanView, SolrQuery solrQuery, ModelAndView model) {
+    public void logBriefResultView(HttpServletRequest request, BriefBeanView briefBeanView, SolrQuery solrQuery, ModelAndView page) {
         String query = briefBeanView.getPagination().getPresentationQuery().getUserSubmittedQuery(); //
         String queryConstraints = "";
         if (solrQuery.getFilterQueries() != null) {
@@ -113,13 +113,13 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
                 MessageFormat.format(
                         "[action={0}, view={1}, query={2}, queryType={7}, queryConstraints=\"{3}\", page={4}, " +
                                 "numFound={5}, langFacet={8}, countryFacet={9}, {6}]",
-                        UserAction.BRIEF_RESULT, model.getViewName(), query,
+                        UserAction.BRIEF_RESULT, page.getViewName(), query,
                         queryConstraints, pageNr, nrResults, printLogAffix(request), solrQuery.getQueryType(),
                         languageFacets, countryFacet));
     }
 
     @Override
-    public void logFullResultView(HttpServletRequest request, FullBeanView fullResultView, ModelAndView model, String europeanaUri) {
+    public void logFullResultView(HttpServletRequest request, FullBeanView fullResultView, ModelAndView page, String europeanaUri) {
         String originalQuery = "";
         String startPage = "";
         try {
@@ -138,7 +138,7 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
                         startPage, originalQuery));
     }
 
-    private String printLogAffix(HttpServletRequest request) {
+    private static String printLogAffix(HttpServletRequest request) {
         DateTime date = new DateTime();
         String ip = request.getRemoteAddr();
         String reqUrl = getRequestUrl(request);
@@ -151,9 +151,11 @@ public class ClickStreamLoggerImpl implements ClickStreamLogger {
             userId = "";
         }
         String language = ControllerUtil.getLocale(request).toString();
+        String userAgent = request.getHeader("User-Agent");
+        String referer = request.getHeader("referer");
         return MessageFormat.format(
-                "userId={0}, lang={1}, req={4}, date={2}, ip={3}",
-                userId, language, date, ip, reqUrl);
+                "userId={0}, lang={1}, req={4}, date={2}, ip={3}, user-agent={5}, referer={6}",
+                userId, language, date, ip, reqUrl, userAgent, referer);
     }
 
     private static String getRequestUrl(HttpServletRequest request) {
