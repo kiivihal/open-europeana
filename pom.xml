@@ -130,12 +130,28 @@
             <name>EBR External Release Repository</name>
             <url>http://repository.springsource.com/maven/bundles/external</url>
         </repository>
-     </repositories>
+        <repository>
+            <id>scala-tools.releases</id>
+            <name>Scala-Tools Dependencies Repository for Releases</name>
+            <url>http://scala-tools.org/repo-releases</url>
+        </repository>
+        <repository>
+            <id>scala-tools.snapshots</id>
+            <name>Scala-Tools Dependencies Repository for Snapshots</name>
+            <url>http://scala-tools.org/repo-snapshots</url>
+            <snapshots/>
+        </repository>
+    </repositories>
 
     <pluginRepositories>
         <pluginRepository>
             <id>snapshots</id>
             <url>http://europeanalabs.eu/artifactory/repo</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>scala-tools.org.releases</id>
+            <name>Scala-Tools Plugins Repository for Releases</name>
+            <url>http://scala-tools.org/repo-releases</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -154,7 +170,45 @@
     </organization>
 
     <build>
+        <sourceDirectory>src/main/scala</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>2.13.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.sf.alchim</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>0.7.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compress</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <nosuffix>true</nosuffix>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-idea-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -494,6 +548,18 @@
                 <version>1.4.0</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest</artifactId>
+                <version>${scalaTest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-compiler</artifactId>
+                <version>${scala.version}</version>
+                <scope>test</scope>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
     <properties>
@@ -517,6 +583,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <gwtVersion>2.0.0</gwtVersion>
+        <scala.version>2.8.0.Beta1</scala.version>
+        <scalaTest.version>1.0-for-scala-2.8.0-SNAPSHOT</scalaTest.version>
         <!--<google.webtoolkit.home>${env.GWT_HOME}</google.webtoolkit.home>-->
 
     </properties>
