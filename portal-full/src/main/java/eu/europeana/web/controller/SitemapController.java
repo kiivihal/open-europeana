@@ -205,66 +205,6 @@ public class SitemapController {
         return mavPage;
     }
 
-     /**
-     * This is a test method to determine the load crawl bots put on the system and to see how a test collection
-     * "tel-treasures" is discoverable via the web search engine
-     *
-     * @param collection
-     * @param page
-     * @param request
-     * @return ModelAndView
-     * @throws org.apache.solr.client.solrj.SolrServerException
-     * @throws eu.europeana.core.querymodel.query.EuropeanaQueryException
-     */
-    @RequestMapping("/sitemap.xml")
-    public ModelAndView handleTestSitemap(
-            @RequestParam(value = "collection", required = false) String collection,
-            @RequestParam(value = "page", required = false) String page,
-            HttpServletRequest request
-    ) throws SolrServerException, EuropeanaQueryException {
-        String fullDocPageString = "full-doc.html";
-        String baseUrl = fullViewUrl;
-        if (baseUrl.endsWith(fullDocPageString)) {
-            baseUrl = baseUrl.substring(0, fullViewUrl.length() - fullDocPageString.length());
-        }
-        ModelAndView mavPage;
-        if (collection == null) {
-            List<SitemapIndexEntry> entries = new ArrayList<SitemapIndexEntry>();
-            EuropeanaCollection testCollection = new EuropeanaCollection();
-            testCollection.setName("92001_Ag_EU_TELtreasures ");
-            List<EuropeanaCollection> europeanaCollections = new ArrayList<EuropeanaCollection>();
-            europeanaCollections.add(testCollection);
-            for (EuropeanaCollection europeanaCollection : europeanaCollections) {
-                for (int i = 0; i <= europeanaCollection.getTotalRecords() / MAX_RECORDS_PER_SITEMAP_FILE; i++) {
-                    // add each page of a collection to the index.
-                    entries.add(
-                            new SitemapIndexEntry(
-                                    StringEscapeUtils.escapeXml(String.format("%ssitemap.xml?collection=%s&page=%d", baseUrl, europeanaCollection.getName(), i)),
-                                    europeanaCollection.getCollectionLastModified()));
-                }
-            }
-
-            mavPage = ControllerUtil.createModelAndViewPage("sitemap-index");
-            mavPage.addObject("entries", entries);
-        }
-        else {
-            mavPage = ControllerUtil.createModelAndViewPage("sitemap");
-            mavPage.addObject("fullViewUrl", fullViewUrl);
-
-            // generate sitemap for a collection
-            if (page != null && page.length() > 0 && page.length() < 4 && NumberUtils.isDigits(page)) {
-                int pageInt = Integer.parseInt(page);
-                SiteMapBeanView siteMapBeanView = beanQueryModelFactory.getSiteMapBeanView(collection, MAX_RECORDS_PER_SITEMAP_FILE, pageInt);
-                int maxPageForCollection = siteMapBeanView.getMaxPageForCollection();
-                if (pageInt <= maxPageForCollection) {
-                    List<? extends DocId> list = siteMapBeanView.getIdBeans();
-                    mavPage.addObject("idBeanList", list);
-                }
-            }
-        }
-        return mavPage;
-    }
-
     /**
      * Sitemap index entry, model for MVC.
      */
