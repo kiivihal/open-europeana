@@ -24,8 +24,6 @@ public interface ESEValidator {
 
     List<ESEImportErrors> importESEDataSet(File eseImportFile);
 
-    
-
     BriefBeanView queryBriefResult(EuropeanaQuery europeanaQuery);
 
     FullBeanView queryFullResult(String europeanaUri);
