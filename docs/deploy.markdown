@@ -1,16 +1,16 @@
-Title:			How to Deploy Open Europeana  
-Author:			Sjoerd Siebinga  
-Affiliation:	Open Europeana 
-Date:			January 30, 2010  
-Copyright:		2010 Open Europeana  
-				This work is licensed under a Creative Commons License.  
+Title:			How to Deploy Open Europeana
+Author:			Sjoerd Siebinga
+Affiliation:	Open Europeana
+Date:			January 30, 2010
+Copyright:		2010 Open Europeana
+				This work is licensed under a Creative Commons License.
 				http://creativecommons.org/licenses/by-sa/2.5/
-Keywords:		
+Keywords:
 
 # How to deploy Open Europeana #
 
 In this document you can find the instructions how to deploy the *Europeana Framework* on a server environment. For development
-setup please consult *develop.md*
+setup please consult *develop.markdown*
 
 ## Requirements ##
 
@@ -24,7 +24,7 @@ setup please consult *develop.md*
 
 ## Build Components ##
 
-Maven 2 (2.10 or higher) is used to build the _Europeana Framework_ so make sure it is installed on your system and is available from the command-line. 
+Maven 2 (2.10 or higher) is used to build the _Europeana Framework_ so make sure it is installed on your system and is available from the command-line.
 
 Go to the root of the project, i.e. where you find the `core`, `portal-lite`, etc. module folders. You can build the components in two ways: run the `build_europeana.sh` build script or perform the steps manually.
 
@@ -39,7 +39,7 @@ Make the file executable and execute it.
 ### Manually ###
 
 
-Build `core` component and install in your local maven2 repository (~/.m2/repository)	
+Build `core` component and install in your local maven2 repository (~/.m2/repository)
 
 	cd core
 	mvn clean install -Dmaven.test.skip=true
@@ -49,12 +49,12 @@ Build `api` component.
 	cd ../api
 	mvn clean package
 
-Build `portal-lite` component. 
+Build `portal-lite` component.
 
 	cd ../portal-lite
 	mvn clean package
 
-Build `dashboard` component. 
+Build `dashboard` component.
 
 	cd ../dashboard
 	mvn clean package
@@ -95,6 +95,6 @@ server      # psql -U your_db_name europeana < your_dump_file
 If you do not have a development copy of the database you can use the following command to init the database.
 <!--
 	TODO add command to init db.
---> 
+-->
 
 To import and index the sample data please run the following command:

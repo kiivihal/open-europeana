@@ -4,7 +4,7 @@
 	TODO rewrite documentation to reflect changes after refactor (11-12-2009)
 -->
 
-This document shows you how to setup your local development environment to start developing on the Europeana Prototype. If you want to deploy the Europeana Prototype on a server environment, consult `deploy.md`.
+This document shows you how to setup your local development environment to start developing on the Europeana Prototype. If you want to deploy the Europeana Prototype on a server environment, consult `deploy.markdown`.
 
 ## Requirements:
 
@@ -34,7 +34,7 @@ We assume that you have postgres installed on your system and have access to the
 
 create 'europeana' user
 
-	createuser -U postgres -P -D -R europeana	
+	createuser -U postgres -P -D -R europeana
 
 create 'europeana' database and enter password 'culture' on the password prompt
 
