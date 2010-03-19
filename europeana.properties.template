@@ -31,6 +31,8 @@ db.password    = culture
 #
 # solr connection settings
 solr.baseUrl = http://localhost:8983/solr
+solr.selectUrl = http://localhost:8983/solr
+solr.updateUrl = http://localhost:8983/solr
 solr.chunkSize = 1000
 solr.timeout = 60000
 solr.retries = 1
@@ -93,3 +95,14 @@ static.page.path = portal-lite/src/test/staticpages/
 #
 message.resource=file:portal-lite/src/main/message_keys/messages
 message.cache.seconds=60
+
+#
+# Where the log4j.xml is that is to be used for logging configuration.
+#
+log4j.xml=/tmp/log4j.xml
+
+#
+# Where the image annotation tool can be found. If this property is set a
+# link will be created in the actions sidebar of the full-doc view.
+#
+#image.annotation.tool.base.url=../image-annotation-frontend/annotate.jsp

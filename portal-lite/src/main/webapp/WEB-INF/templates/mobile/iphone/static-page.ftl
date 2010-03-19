@@ -28,5 +28,5 @@ function ContactMe(prefix,suffix){
 		</li>
 		</ul>
 </div>
-<#include "inc_footer.ftl"/>
+<#include "../inc_footer.ftl"/>
 

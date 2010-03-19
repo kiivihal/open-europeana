@@ -52,10 +52,97 @@
         <form method="get" action="brief-doc.html" accept-charset="UTF-8" onsubmit="return checkFormSimpleSearch('query');">
             <input type="hidden" name="start" value="1" />
             <input type="hidden" name="view" value="${view}" />
-            <input class="txt-input" name="query" id="query" type="text" title="Europeana Search" maxlength="75" />
+            <input class="txt-input" name="query" id="query" type="text" title="Europeana Search" maxlength="75"
+                <#if proposedSearchTerms?? && proposedSearchTerms?first??>
+                 placeholder="${proposedSearchTerms?first.proposedSearchTerm}"
+                </#if>
+            />
             <input id="submit_search" type="submit" value="<@spring.message 'Search_t' />" />
         </form>
     </div>
+</#macro>
+
+
+<#macro treasures>
+    <#assign x = 0>
+    <#list carouselItems as carouselItem>
+        <#assign x = x + 100>
+		    <#if carouselItem_index <=12 && x <= device_screen_width> <#-- we only want to see a maximum of 12 items, otherwise page-load will be too slow -->
+                <#assign doc = carouselItem.doc/>
+                <a href="full-doc.html?uri=${doc.id}">
+				<#if useCache="true">
+                    <img src="${cacheUrl}uri=${doc.thumbnail?url('utf-8')}&size=BRIEF_DOC&type=${doc.type}"
+                        <#if is_IEMobile?? && is_IEMobile = true>
+                            onload="resizeIEMobile(this,80,113)" 
+                        </#if>
+                    />
+                <#else>
+                    <img src="${doc.thumbnail}"/>
+				</#if>
+                </a>
+<#--                <#assign title = ""/>
+                    <#if doc.title??>
+                      <#assign title = doc.title />
+                    </#if>
+                    <#if (title?length <= 1)>
+                      <#assign title = "..." />
+                    </#if>
+    -->
+                   </#if>
+    </#list>
+</#macro>
+
+
+<#-- macros from brief-doc-window -->
+
+<#--------------------------------------------------------------------------------------------------------------------->
+<#--  RESULT NAVIGATION/PAGINATION MACROS --->
+<#--------------------------------------------------------------------------------------------------------------------->
+
+
+<#-- UI STYLED  -->
+<#macro resultnav>
+	<#if pagination.previous>
+    	<a href="?${queryStringForPresentation?html}&amp;tab=${tab}&amp;start=${pagination.previousPage?c}&amp;view=${view}"
+        	class="pagination">&lt;</a>
+	</#if>
+	<#list pagination.pageLinks as link>
+    	<#if link.linked>
+        	<#assign lstart = link.start/>
+            	<a href="?${queryStringForPresentation?html}&amp;tab=${tab}&amp;start=${link.start?c}&amp;view=${view}"
+            		class="pagination">${link.display?c}</a>
+		<#else>
+        		<span class="pagination" id="pagination-current">${link.display?c}</span>
+		</#if>
+	</#list>
+
+	<#if pagination.next>
+    	<a href="?${queryStringForPresentation?html}&amp;tab=${tab}&amp;start=${pagination.nextPage?c}&amp;view=${view}"
+    		class="pagination">&gt;</a>
+	</#if>
+</#macro>
+
+
+<#macro viewSelect>
+	<#if queryStringForPresentation?exists>
+    	<#switch view>
+    		<#case "text_only">
+      			<a href="${thisPage}?${queryStringForPresentation?html}&amp;view=mixed"><img src="mobile/images/mixed.gif" /></a>
+				<a class="buttonpressed" href="${thisPage}?${queryStringForPresentation?html}&amp;view=text_only"><img src="mobile/images/text_only.gif" /></a>
+				<a href="${thisPage}?${queryStringForPresentation?html}&amp;view=image_only"><img src="mobile/images/image_only.gif" /></a>
+    		<#break/>
+    		<#case "image_only">
+      			<a href="${thisPage}?${queryStringForPresentation?html}&amp;view=mixed"><img src="mobile/images/mixed.gif" /></a>
+				<a href="${thisPage}?${queryStringForPresentation?html}&amp;view=text_only"><img src="mobile/images/text_only.gif" /></a>
+				<a class="buttonpressed" href="${thisPage}?${queryStringForPresentation?html}&amp;view=image_only"><img src="mobile/images/image_only.gif" /></a>
+    		<#break/>
+    		<#default>
+      			<a class="buttonpressed" href="${thisPage}?${queryStringForPresentation?html}&amp;view=mixed"><img src="mobile/images/mixed.gif" /></a>
+				<a href="${thisPage}?${queryStringForPresentation?html}&amp;view=text_only"><img src="mobile/images/text_only.gif" /></a>
+				<a href="${thisPage}?${queryStringForPresentation?html}&amp;view=image_only"><img src="mobile/images/image_only.gif" /></a>
+    		<#break/>
+		</#switch>
+	</#if>
 </#macro>
 
 
@@ -118,3 +205,15 @@
     </#list>
     <#return nonEmptyValue />
 </#function>
+
+<#macro resultnavigation>
+<#if pagination??>
+    <#if pagination.previous>
+        <a href="full-doc.html?${queryStringForPaging?html}&amp;start=${pagination.previousInt?c}&amp;uri=${pagination.previousUri}&amp;view=${view}&amp;pageId=${pagination.pageId}&amp;tab=${pagination.tab}" class="pagination">&lt;</a>
+    </#if>
+    &#160;&#160;
+    <#if pagination.next>
+        <a href="full-doc.html?${queryStringForPaging?html}&amp;start=${pagination.nextInt?c}&amp;uri=${pagination.nextUri}&amp;view=${view}&amp;pageId=${pagination.pageId}&amp;tab=${pagination.tab}" class="pagination">&gt;</a>
+    </#if>
+</#if>
+</#macro>

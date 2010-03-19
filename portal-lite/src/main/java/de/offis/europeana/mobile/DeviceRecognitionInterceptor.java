@@ -42,6 +42,7 @@ public class DeviceRecognitionInterceptor extends HandlerInterceptorAdapter {
 
 	/*
 	 * modifies the ViewName to a template that is best suited for a mobile device's capabilities.
+	 * Information about the device's screen width & height is added to ModelAndView
 	 * @see org.springframework.web.servlet.handler.HandlerInterceptorAdapter#postHandle(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, org.springframework.web.servlet.ModelAndView)
 	 */
 	@Override
@@ -51,8 +52,15 @@ public class DeviceRecognitionInterceptor extends HandlerInterceptorAdapter {
 		super.postHandle(httpServletRequest, httpServletResponse, o, modelAndView);
 		if (deviceRecognition != null) {
 			String currentViewName = modelAndView.getViewName();
-			if (currentViewName != null) {
-				modelAndView.setViewName(deviceRecognition.getDeviceTemplate(httpServletRequest, currentViewName));
+			if (currentViewName != null && !currentViewName.startsWith("redirect:")) {
+                DeviceRecognitionResult deviceRecognitionResult = deviceRecognition.getDeviceInformation(httpServletRequest, currentViewName);
+                if (deviceRecognitionResult != null) {
+                    modelAndView.setViewName(deviceRecognitionResult.GetTemplateName());
+                    modelAndView.addObject("device_screen_width", deviceRecognitionResult.GetDeviceScreenWidth());
+                    modelAndView.addObject("device_screen_height", deviceRecognitionResult.GetDeviceScreenHeight());
+                    modelAndView.addObject("coverflow_enabled", deviceRecognitionResult.GetCoverflowEnabled());
+                    modelAndView.addObject("is_IEMobile", deviceRecognitionResult.GetIsIEMobile());
+                }
 			}
 		}
 	}

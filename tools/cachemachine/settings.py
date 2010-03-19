@@ -1,5 +1,7 @@
 # Django settings for cachemachine project.
 
+from local_settings import *
+
 #local_settings.py DEBUG = True
 
 TEMPLATE_DEBUG = DEBUG
@@ -70,6 +72,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    '/Users/jaclu/src/django_trunk/django/contrib/databrowse/templates',
 )
 
 INSTALLED_APPS = (
@@ -77,4 +80,15 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.admin',
+    'django.contrib.admindocs',
+    'apps.cache_machine',
 )
+
+
+# will be stored under MEDIA_ROOT
+DIR_ORIGINAL = 'ORIGINAL'
+DIR_FULL_DOC = 'FULL_DOC'
+DIR_BRIEF_DOC = 'BRIEF_DOC'
+DIR_BAD_ORIGINAL = 'BAD_ORIGINAL'
+DIR_WGET_FILES = 'wget-files'
